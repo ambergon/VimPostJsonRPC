@@ -264,9 +264,9 @@ class PostJsonRPC:
         "CATEGORY"  : "Category  :"                 ,
         "TAGS"      : "Tags      :"                 ,
         "DATE"      : "yyyy-mm-dd:"                 ,
-        "URL"       : "https://  :"                 ,
-        "PRIVATE"   : "https://  :"                 ,
-        "PUBLIC"    : "https://  :"                 ,
+        "URL"       : "Default   :"                 ,
+        "PRIVATE"   : "Private   :"                 ,
+        "PUBLIC"    : "Public    :"                 ,
         "THOUGHTS"  : "[Thoughts] =================",
     }
 
