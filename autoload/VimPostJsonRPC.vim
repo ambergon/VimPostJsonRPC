@@ -265,7 +265,8 @@ class PostJsonRPC:
         "TAGS"      : "Tags      :"                 ,
         "DATE"      : "yyyy-mm-dd:"                 ,
         "URL"       : "https://  :"                 ,
-        "BACKUP"    : "https://  :"                 ,
+        "PRIVATE"   : "https://  :"                 ,
+        "PUBLIC"    : "https://  :"                 ,
         "THOUGHTS"  : "[Thoughts] =================",
     }
 
@@ -303,7 +304,8 @@ class PostJsonRPC:
         vim.current.buffer.append( self.TEMPLATE['TAGS']     )
         vim.current.buffer.append( self.TEMPLATE['DATE']     )
         vim.current.buffer.append( self.TEMPLATE['URL']      )
-        vim.current.buffer.append( self.TEMPLATE['BACKUP']   )
+        vim.current.buffer.append( self.TEMPLATE['PRIVATE']  )
+        vim.current.buffer.append( self.TEMPLATE['PUBLIC']   )
         vim.current.buffer.append( self.TEMPLATE['THOUGHTS'] )
         del vim.current.buffer[0]
 
@@ -329,8 +331,9 @@ class PostJsonRPC:
         TAGS        = vim.current.buffer[4].replace( self.TEMPLATE['TAGS']     , "" , 1 )
         DATE        = vim.current.buffer[5].replace( self.TEMPLATE['DATE']     , "" , 1 )
         URL         = vim.current.buffer[6].replace( self.TEMPLATE['URL']      , "" , 1 )
-        BACKUP      = vim.current.buffer[7].replace( self.TEMPLATE['BACKUP']   , "" , 1 )
-        BUFFER      = vim.current.buffer[9:]
+        PRIVATE     = vim.current.buffer[7].replace( self.TEMPLATE['PRIVATE']  , "" , 1 )
+        PUBLIC      = vim.current.buffer[8].replace( self.TEMPLATE['PUBLIC']   , "" , 1 )
+        BUFFER      = vim.current.buffer[10:]
         TEXT        = ""
         for line in BUFFER:
             TEXT = TEXT + line + "\n"
@@ -345,7 +348,8 @@ class PostJsonRPC:
             "TAGS"      : TAGS     , 
             "DATE"      : DATE     , 
             "URL"       : URL      , 
-            "BACKUP"    : BACKUP   , 
+            "PRIVATE"   : PRIVATE  , 
+            "PUBLIC"    : PUBLIC   , 
             "TEXT"      : TEXT     , 
         }
 
