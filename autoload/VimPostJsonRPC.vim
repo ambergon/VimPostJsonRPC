@@ -359,6 +359,9 @@ class PostJsonRPC:
         }
         # リクエストを送信
         response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
+        if self.ID != "" and self.PW != "" :
+            # print( "ID/PW mode" )
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ))
 
         # レスポンスの処理
         if response.status_code == 200:
@@ -406,7 +409,7 @@ class PostJsonRPC:
             print( "Request failed with status code:" , response.status_code )
 
 
-VimPostJsonRPCInst = PostJsonRPC( vim.eval( "g:VimPostJsonRPC_URL" ) , vim.eval( "g:VimPostJsonRPC_URL" ) , vim.eval( "g:VimPostJsonRPC_URL" ) )
+VimPostJsonRPCInst = PostJsonRPC( vim.eval( "g:VimPostJsonRPC_URL" ) , vim.eval( "g:VimPostJsonRPC_ID" ) , vim.eval( "g:VimPostJsonRPC_PW" ) )
 EOF
 
 let s:VimPostJsonRPC = "VimPostJsonRPCInst"
