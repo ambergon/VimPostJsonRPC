@@ -267,6 +267,7 @@ class PostJsonRPC:
         "URL"       : "Default   :"                 ,
         "PRIVATE"   : "Private   :"                 ,
         "PUBLIC"    : "Public    :"                 ,
+        "OVERVIEW"  : "Overview  :"                 ,
         "THOUGHTS"  : "[Thoughts] =================",
     }
 
@@ -306,6 +307,7 @@ class PostJsonRPC:
         vim.current.buffer.append( self.TEMPLATE['URL']      )
         vim.current.buffer.append( self.TEMPLATE['PRIVATE']  )
         vim.current.buffer.append( self.TEMPLATE['PUBLIC']   )
+        vim.current.buffer.append( self.TEMPLATE['OVERVIEW'] )
         vim.current.buffer.append( self.TEMPLATE['THOUGHTS'] )
         del vim.current.buffer[0]
 
@@ -333,7 +335,8 @@ class PostJsonRPC:
         URL         = vim.current.buffer[6].replace( self.TEMPLATE['URL']      , "" , 1 )
         PRIVATE     = vim.current.buffer[7].replace( self.TEMPLATE['PRIVATE']  , "" , 1 )
         PUBLIC      = vim.current.buffer[8].replace( self.TEMPLATE['PUBLIC']   , "" , 1 )
-        BUFFER      = vim.current.buffer[10:]
+        OVERVIEW    = vim.current.buffer[9].replace( self.TEMPLATE['OVERVIEW'] , "" , 1 )
+        BUFFER      = vim.current.buffer[11:]
         TEXT        = ""
         for line in BUFFER:
             TEXT = TEXT + line + "\n"
@@ -350,6 +353,7 @@ class PostJsonRPC:
             "URL"       : URL      , 
             "PRIVATE"   : PRIVATE  , 
             "PUBLIC"    : PUBLIC   , 
+            "OVERVIEW"  : OVERVIEW , 
             "TEXT"      : TEXT     , 
         }
 
