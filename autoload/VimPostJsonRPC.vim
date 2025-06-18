@@ -408,15 +408,42 @@ class PostJsonRPC:
             response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ))
 
         # レスポンスの処理
+        result = []
+        # {{{
         if response.status_code == 200:
             try:
                 result = response.json()
-                print( "Response:" , result )
+                # print( "Response:" , result )
             except ValueError:
                 print( "Response is not a valid JSON" )
+                exit
 
         else:
             print( "Request failed with status code:" , response.status_code )
+            exit
+        # }}}
+
+        print( "Response:" , result )
+        # vim.command('setl buftype=nowrite' )
+        # vim.command("setl encoding=utf-8")
+        # vim.command('setl filetype=markdown' )
+
+        # del vim.current.buffer[:]
+        # vim.current.buffer.append( self.TEMPLATE['DONT']     )
+        # vim.current.buffer.append( self.TEMPLATE['ID']       )
+        # vim.current.buffer.append( self.TEMPLATE['META']     )
+        # vim.current.buffer.append( self.TEMPLATE['TITLE']    )
+        # vim.current.buffer.append( self.TEMPLATE['SUMMARY']  )
+        # vim.current.buffer.append( self.TEMPLATE['PERSONS']  )
+        # vim.current.buffer.append( self.TEMPLATE['TAGS']     )
+        # vim.current.buffer.append( self.TEMPLATE['DATE']     )
+        # vim.current.buffer.append( self.TEMPLATE['URL']      )
+        # vim.current.buffer.append( self.TEMPLATE['PRIVATE']  )
+        # vim.current.buffer.append( self.TEMPLATE['PUBLIC']   )
+        # vim.current.buffer.append( self.TEMPLATE['OVERVIEW'] )
+        # vim.current.buffer.append( self.TEMPLATE['THOUGHTS'] )
+        # del vim.current.buffer[0]
+
 
 
 
