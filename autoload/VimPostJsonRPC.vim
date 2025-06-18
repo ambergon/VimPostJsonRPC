@@ -152,7 +152,7 @@ import copy
 #                 #記事事に正常にタグとカテゴリーを取得しなおすのが難しかった記憶。
 #                 #カテゴリ一覧をリスト
 #                 Categories =[]
-#                 CategoriesRaw = self.wp.call( GetTerms("category") )
+#                 CategoriesRaw = self.wp.call( GetTerms("PERSONS") )
 #                 for tag in CategoriesRaw:
 #                     Categories.append( str( tag ) )
 # 
@@ -182,20 +182,20 @@ import copy
     #    POST_ID         = vim.current.buffer[1].replace(self.META_ID , ""              )
     #    CUSTOM_FIELD_ID = vim.current.buffer[2].replace(self.META_CUSTOM_FIELD_ID , "" )
     #    TITLE           = vim.current.buffer[4].replace(self.META_TITLE , ""           )
-    #    CATEGORY        = vim.current.buffer[5].replace(self.META_CATEGORY , "" ).split( "," )
+    #    PERSONS        = vim.current.buffer[5].replace(self.META_CATEGORY , "" ).split( "," )
     #    TAG             = vim.current.buffer[6].replace(self.META_TAGS , "" ).split( "," )
     #    #空の要素を削除する
     #    TAG      = list(filter( None , TAG ) )
     #    #CATEGORY.replace(' ','')
-    #    CATEGORY = list(filter( None , CATEGORY ) )
+    #    PERSONS = list(filter( None , PERSONS ) )
 
     #    Post = WordPressPost()
     #    Post.title = TITLE
     #    Post.terms_names = None
     #    #カテゴリを指定しない場合はカテゴリもタグの変化しない
-    #    if( CATEGORY != "" ):
+    #    if( PERSONS != "" ):
     #        Post.terms_names ={
-    #            "category" : CATEGORY ,
+    #            "PERSONS" : PERSONS ,
     #            "post_tag" : TAG   ,
     #            }
     #    if( STATUS =="publish" or STATUS == "Publish" or STATUS == "PUBLISH" ):
@@ -252,16 +252,18 @@ class PostJsonRPC:
     PW  = ""
 
     # Title           :タイトル
-    # Category        :人(カンマ区切り)
+    # PERSONS         :人(カンマ区切り)
     # Tags            :タグ(カンマ区切り)
     # この記事が書かれた時期 : yyyymmdd
 
 
     TEMPLATE = {
+        "DONT"      : "[Dont Touch] ===============",
+        "ID"        : "ID        :"                 ,
         "META"      : "[Meta] =====================",
         "TITLE"     : "Title     :"                 ,
         "SUMMARY"   : "Summary   :"                 ,
-        "CATEGORY"  : "Category  :"                 ,
+        "PERSONS"   : "PERSONS   :"                 ,
         "TAGS"      : "Tags      :"                 ,
         "DATE"      : "yyyy-mm-dd:"                 ,
         "URL"       : "Default   :"                 ,
@@ -298,10 +300,12 @@ class PostJsonRPC:
         # vim.command('setl syntax=blogsyntax')
 
         del vim.current.buffer[:]
+        vim.current.buffer.append( self.TEMPLATE['DONT']     )
+        vim.current.buffer.append( self.TEMPLATE['ID']       )
         vim.current.buffer.append( self.TEMPLATE['META']     )
         vim.current.buffer.append( self.TEMPLATE['TITLE']    )
         vim.current.buffer.append( self.TEMPLATE['SUMMARY']  )
-        vim.current.buffer.append( self.TEMPLATE['CATEGORY'] )
+        vim.current.buffer.append( self.TEMPLATE['PERSONS']  )
         vim.current.buffer.append( self.TEMPLATE['TAGS']     )
         vim.current.buffer.append( self.TEMPLATE['DATE']     )
         vim.current.buffer.append( self.TEMPLATE['URL']      )
@@ -311,12 +315,13 @@ class PostJsonRPC:
         vim.current.buffer.append( self.TEMPLATE['THOUGHTS'] )
         del vim.current.buffer[0]
 
+
     def SendArchive( self ):
 
         # [Meta] =====================
         # Title     :
         # Summary   :
-        # Category  :
+        # PERSONS   :
         # Tags      :
         # yyyy-mm-dd:
         # https://  :
@@ -327,16 +332,17 @@ class PostJsonRPC:
         # これらを受け取って、分解し、複数のsqlに分けるのはphp側でよい。
         # 上記のテンプレートに追加し、本文/感想を送信する必要がある。
 
-        TITLE       = vim.current.buffer[1].replace( self.TEMPLATE['TITLE']    , "" , 1 )
-        SUMMARY     = vim.current.buffer[2].replace( self.TEMPLATE['SUMMARY']  , "" , 1 )
-        CATEGORY    = vim.current.buffer[3].replace( self.TEMPLATE['CATEGORY'] , "" , 1 )
-        TAGS        = vim.current.buffer[4].replace( self.TEMPLATE['TAGS']     , "" , 1 )
-        DATE        = vim.current.buffer[5].replace( self.TEMPLATE['DATE']     , "" , 1 )
-        URL         = vim.current.buffer[6].replace( self.TEMPLATE['URL']      , "" , 1 )
-        PRIVATE     = vim.current.buffer[7].replace( self.TEMPLATE['PRIVATE']  , "" , 1 )
-        PUBLIC      = vim.current.buffer[8].replace( self.TEMPLATE['PUBLIC']   , "" , 1 )
-        OVERVIEW    = vim.current.buffer[9].replace( self.TEMPLATE['OVERVIEW'] , "" , 1 )
-        BUFFER      = vim.current.buffer[11:]
+        ID          = vim.current.buffer[1].replace( self.TEMPLATE['ID']       , "" , 1 )
+        TITLE       = vim.current.buffer[3].replace( self.TEMPLATE['TITLE']    , "" , 1 )
+        SUMMARY     = vim.current.buffer[4].replace( self.TEMPLATE['SUMMARY']  , "" , 1 )
+        PERSONS     = vim.current.buffer[5].replace( self.TEMPLATE['PERSONS']  , "" , 1 )
+        TAGS        = vim.current.buffer[6].replace( self.TEMPLATE['TAGS']     , "" , 1 )
+        DATE        = vim.current.buffer[7].replace( self.TEMPLATE['DATE']     , "" , 1 )
+        URL         = vim.current.buffer[8].replace( self.TEMPLATE['URL']      , "" , 1 )
+        PRIVATE     = vim.current.buffer[9].replace( self.TEMPLATE['PRIVATE']  , "" , 1 )
+        PUBLIC      = vim.current.buffer[10].replace( self.TEMPLATE['PUBLIC']  , "" , 1 )
+        OVERVIEW    = vim.current.buffer[11].replace( self.TEMPLATE['OVERVIEW'], "" , 1 )
+        BUFFER      = vim.current.buffer[13:]
         TEXT        = ""
         for line in BUFFER:
             TEXT = TEXT + line + "\n"
@@ -345,9 +351,10 @@ class PostJsonRPC:
         # 適当に空白を除去する必要がある。
         PAYLOAD[ 'method' ]  = "AddArchive"
         PAYLOAD[ 'params' ]  = {
+            "ID"        : ID       , 
             "TITLE"     : TITLE    , 
             "SUMMARY"   : SUMMARY  , 
-            "CATEGORY"  : CATEGORY , 
+            "PERSONS"   : PERSONS  , 
             "TAGS"      : TAGS     , 
             "DATE"      : DATE     , 
             "URL"       : URL      , 
@@ -379,6 +386,37 @@ class PostJsonRPC:
             print( "Request failed with status code:" , response.status_code )
 
 
+
+    def SearchTags( self , args ):
+        if len( args ) == 0 :
+            exit
+
+        tags_array = args.split( "," )
+
+        PAYLOAD = copy.deepcopy( self.PAYLOAD )
+        PAYLOAD[ 'method' ]  = "SearchTags"
+        PAYLOAD[ 'params' ] = {
+            "TAGS" : tags_array
+        }
+        headers = {
+            "Content-Type": "application/json"
+        }
+        # リクエストを送信
+        response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
+        if self.ID != "" and self.PW != "" :
+            # print( "ID/PW mode" )
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ))
+
+        # レスポンスの処理
+        if response.status_code == 200:
+            try:
+                result = response.json()
+                print( "Response:" , result )
+            except ValueError:
+                print( "Response is not a valid JSON" )
+
+        else:
+            print( "Request failed with status code:" , response.status_code )
 
 
 
