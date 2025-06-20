@@ -178,73 +178,6 @@ import re
 # VimPostJsonRPCInst = PythonClass()
 # "}}}
 
-    ##適当なテキストを保存できるように使用。
-    #def BlogSave( self , STATUS="draft" ):
-    #    POST_ID         = vim.current.buffer[1].replace(self.META_ID , ""              )
-    #    CUSTOM_FIELD_ID = vim.current.buffer[2].replace(self.META_CUSTOM_FIELD_ID , "" )
-    #    TITLE           = vim.current.buffer[4].replace(self.META_TITLE , ""           )
-    #    PERSONS        = vim.current.buffer[5].replace(self.META_CATEGORY , "" ).split( "," )
-    #    TAG             = vim.current.buffer[6].replace(self.META_TAGS , "" ).split( "," )
-    #    #空の要素を削除する
-    #    TAG      = list(filter( None , TAG ) )
-    #    #CATEGORY.replace(' ','')
-    #    PERSONS = list(filter( None , PERSONS ) )
-
-    #    Post = WordPressPost()
-    #    Post.title = TITLE
-    #    Post.terms_names = None
-    #    #カテゴリを指定しない場合はカテゴリもタグの変化しない
-    #    if( PERSONS != "" ):
-    #        Post.terms_names ={
-    #            "PERSONS" : PERSONS ,
-    #            "post_tag" : TAG   ,
-    #            }
-    #    if( STATUS =="publish" or STATUS == "Publish" or STATUS == "PUBLISH" ):
-    #        Post.post_status = "publish"
-    #    else:
-    #        Post.post_status = "draft"
-
-    #    MarkdownText   = ""
-    #    text = vim.current.buffer[8:]
-
-    #    for line in text:
-    #        MarkdownText = MarkdownText + line + "\n"
-
-    #    Post.content = self.md.convert( MarkdownText )
-    #    CustomField = []
-
-    #    #新規記事
-    #    if( POST_ID == "" ):
-    #        CustomField.append({
-    #            "key"    : self.CUSTOM_FIELD_KEY ,
-    #            "value"  : MarkdownText ,
-    #            })
-    #        Post.custom_fields = CustomField
-    #        NewPostID = self.wp.call( NewPost( Post ) )
-    #        print( NewPostID )
-
-    #        vim.current.buffer[1] = self.META_ID + NewPostID
-    #        ##ID類をセットしなおす。
-    #        #関数名に干渉するからNewPostは駄目よ。
-    #        newPost = WordPressPost()
-    #        newPost = self.wp.call( GetPost( NewPostID ) )
-    #        for array in newPost.custom_fields:
-    #            if( self.CUSTOM_FIELD_KEY in array.values() ):
-    #                vim.current.buffer[2] = self.META_CUSTOM_FIELD_ID + array["id"]
-    #                vim.command( ":file "   + self.BufferName + NewPostID )
-    #                break
-    #    #編集
-    #    else:
-    #        CustomField.append({
-    #            "id"    : CUSTOM_FIELD_ID ,
-    #            "key"   : self.CUSTOM_FIELD_KEY ,
-    #            "value" : MarkdownText ,
-    #            })
-    #        Post.custom_fields = CustomField
-    #        self.wp.call(EditPost( POST_ID , Post ))
-    #    
-    #    print('done')
-
 class PostJsonRPC:
     BufferName = 'VimPostJsonRPC://'
     #BlogListNum         = 100
@@ -315,7 +248,6 @@ class PostJsonRPC:
     # }}}
     # {{{
     def SendArchive( self ):
-        print(vim.current.buffer.name)
         bn = self.BufferName + "Archive"
         x = vim.current.buffer.name
         if x != bn :
@@ -343,7 +275,7 @@ class PostJsonRPC:
         DATE        = vim.current.buffer[6].replace( self.TEMPLATE['DATE']     , "" , 1 )
         URL         = vim.current.buffer[7].replace( self.TEMPLATE['URL']      , "" , 1 )
         PRIVATE     = vim.current.buffer[8].replace( self.TEMPLATE['PRIVATE']  , "" , 1 )
-        PUBLIC      = vim.current.buffer[9].replace( self.TEMPLATE['PUBLIC']  , "" , 1 )
+        PUBLIC      = vim.current.buffer[9].replace( self.TEMPLATE['PUBLIC']   , "" , 1 )
         BUFFER      = vim.current.buffer[11:]
         TEXT        = ""
         for line in BUFFER:
@@ -430,10 +362,7 @@ class PostJsonRPC:
         vim.command("setl bufhidden=delete" )
         vim.command("map <silent><buffer><enter>   :py3 VimPostJsonRPCInst.GetArchive()<cr>" )
         del vim.current.buffer[:]
-        # vim.current.buffer.append( self.TEMPLATE['DONT']     )
-        # print( len( result[ 'result' ] ) )
         for record in result[ 'result' ]:
-            # print( "[" + record[ 'time' ] + "]" + str( record[ 'id' ] )  + ":" + record[ 'title' ] )
             vim.current.buffer.append( "[" + record[ 'time' ] + "]" + str( record[ 'id' ] )  + ":" + record[ 'title' ] )
         del vim.current.buffer[0]
 
@@ -510,6 +439,21 @@ class PostJsonRPC:
         del vim.current.buffer[0]
 
     # "}}}
+    def SearchArchives( self ):
+        bn = self.BufferName + "Archive"
+        x = vim.current.buffer.name
+        if x != bn :
+            print( "not buffer")
+            return
+        TITLE       = vim.current.buffer[3].replace( self.TEMPLATE['TITLE']    , "" , 1 )
+        PERSONS     = vim.current.buffer[4].replace( self.TEMPLATE['PERSONS']  , "" , 1 )
+        TAGS        = vim.current.buffer[5].replace( self.TEMPLATE['TAGS']     , "" , 1 )
+        DATE        = vim.current.buffer[6].replace( self.TEMPLATE['DATE']     , "" , 1 )
+
+
+
+
+
 
 
 
