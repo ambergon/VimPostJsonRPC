@@ -441,7 +441,7 @@ class PostJsonRPC:
 
 
     # }}}
-"{{{
+    # "{{{
     def GetArchive( self ):
         #BlogListBuffer && current.line MoreList
         #if( PostID == 0 and vim.current.line == self.MoreList ):
@@ -509,7 +509,7 @@ class PostJsonRPC:
             vim.current.buffer.append( line )
         del vim.current.buffer[0]
 
-"}}}
+    # "}}}
 
 
 
