@@ -20,7 +20,6 @@ endif
 
 
 
-" command! -nargs=* Rpc           call VimPostJsonRPC#pycmd('Other(<f-args>)')
 " command! -nargs=* Rpc           call VimPostJsonRPC#pycmd('Send(<f-args>)')
 command! -nargs=* RpcTemplate   call VimPostJsonRPC#pycmd('Template(<f-args>)')
 command! -nargs=* RpcSendAchive call VimPostJsonRPC#pycmd('SendArchive(<f-args>)')
