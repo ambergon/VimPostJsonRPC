@@ -21,9 +21,11 @@ endif
 
 
 " command! -nargs=* Rpc           call VimPostJsonRPC#pycmd('Send(<f-args>)')
-command! -nargs=* RpcTemplate   call VimPostJsonRPC#pycmd('Template(<f-args>)')
-command! -nargs=* RpcSendAchive call VimPostJsonRPC#pycmd('SendArchive(<f-args>)')
-command! -nargs=1 RpcSearchTags call VimPostJsonRPC#pycmd('SearchTags(<q-args>)')
+command! -nargs=* RpcTemplate       call VimPostJsonRPC#pycmd('Template(<f-args>)')
+command! -nargs=* RpcSendAchive     call VimPostJsonRPC#pycmd('SendArchive(<f-args>)')
+command! -nargs=1 RpcSearchTags     call VimPostJsonRPC#pycmd('SearchTags(<q-args>)')
+" command! -nargs=0 RpcSearchArchive  call VimPostJsonRPC#pycmd('SearchTemplate()')
+command! -nargs=0 RpcSearchArchives  call VimPostJsonRPC#pycmd('SearchArchives()')
 " command! -nargs=0                                                       RPC   call VimPostJsonRPC#pycmd('Send(<f-args>)')
 " command! -nargs=? -complete=customlist,VimMarkdownWordpress#CompSave    BlogSave   call VimMarkdownWordpress#pycmd('BlogSave(<f-args>)')
 " 

@@ -380,7 +380,8 @@ class PostJsonRPC:
         ##BlogListBuffer && IDから始まる行。
         #if( PostID == 0):
         archive_id = vim.current.line
-        archive_id = re.sub( "\[.*\]" , "" , archive_id )
+        archive_id = re.sub( r'\[.*\]' , "" , archive_id )
+        # archive_id = re.sub( "\[.*\]" , "" , archive_id )
         archive_id = re.sub( ":.*"    , "" , archive_id )
 
         # print( archive_id )
@@ -440,16 +441,61 @@ class PostJsonRPC:
 
     # "}}}
     def SearchArchives( self ):
-        bn = self.BufferName + "Archive"
-        x = vim.current.buffer.name
-        if x != bn :
-            print( "not buffer")
-            return
-        TITLE       = vim.current.buffer[3].replace( self.TEMPLATE['TITLE']    , "" , 1 )
-        PERSONS     = vim.current.buffer[4].replace( self.TEMPLATE['PERSONS']  , "" , 1 )
-        TAGS        = vim.current.buffer[5].replace( self.TEMPLATE['TAGS']     , "" , 1 )
-        DATE        = vim.current.buffer[6].replace( self.TEMPLATE['DATE']     , "" , 1 )
+        # bn = self.BufferName + "Archive"
+        # x = vim.current.buffer.name
+        # if x != bn :
+        #     print( "not buffer")
+        #     return
+        # TITLE       = vim.current.buffer[3].replace( self.TEMPLATE['TITLE']    , "" , 1 )
+        # PERSONS     = vim.current.buffer[4].replace( self.TEMPLATE['PERSONS']  , "" , 1 )
+        # TAGS        = vim.current.buffer[5].replace( self.TEMPLATE['TAGS']     , "" , 1 )
+        # DATE        = vim.current.buffer[6].replace( self.TEMPLATE['DATE']     , "" , 1 )
 
+        PAYLOAD = copy.deepcopy( self.PAYLOAD )
+        PAYLOAD[ 'method' ]  = "SearchTemplate"
+        PAYLOAD[ 'params' ] = {
+            "TITLE"     : "",
+            "TAGS"      : [ "aa","bb" ],
+            "PERSONS"   : [ "aa","bb" ],
+            "START"     : "2000-1-1",
+            "END"       : "2000-1-1",
+        }
+        headers = {
+            "Content-Type": "application/json"
+        }
+        # リクエストを送信
+        response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
+        if self.ID != "" and self.PW != "" :
+            # print( "ID/PW mode" )
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ))
+
+        # レスポンスの処理
+        result = []
+        # {{{
+        if response.status_code == 200:
+            try:
+                result = response.json()
+                # print( "Response:" , result )
+            except ValueError:
+                print( "Response is not a valid JSON" )
+                return
+
+        else:
+            print( "Request failed with status code:" , response.status_code )
+            return
+        # }}}
+
+        print( "Response:" , result )
+        # vim.command( ':e '   + self.BufferName + "Results" )
+        # vim.command('setl buftype=nowrite' )
+        # vim.command("setl encoding=utf-8")
+        # vim.command('setl filetype=markdown' )
+        # vim.command("setl bufhidden=delete" )
+        # vim.command("map <silent><buffer><enter>   :py3 VimPostJsonRPCInst.GetArchive()<cr>" )
+        # del vim.current.buffer[:]
+        # for record in result[ 'result' ]:
+        #     vim.current.buffer.append( "[" + record[ 'time' ] + "]" + str( record[ 'id' ] )  + ":" + record[ 'title' ] )
+        # del vim.current.buffer[0]
 
 
 
