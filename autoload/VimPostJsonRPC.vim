@@ -172,6 +172,46 @@ class PostJsonRPC:
     # }}}
     # {{{
     def Search( self ):
+#        # {{{
+#        # テスト
+#        PAYLOAD = copy.deepcopy( self.PAYLOAD )
+#        PAYLOAD[ 'method' ]  = "Search"
+#        PAYLOAD[ 'params' ] = {
+#        }
+#        headers = {
+#            "Content-Type": "application/json"
+#        }
+#        # リクエストを送信
+#        response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
+#        if self.ID != "" and self.PW != "" :
+#            # print( "ID/PW mode" )
+#            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ))
+#
+#        # レスポンスの処理
+#        result = []
+#        # {{{
+#        if response.status_code == 200:
+#            try:
+#                result = response.json()
+#            except ValueError:
+#                print( "Response is not a valid JSON" )
+#                return
+#
+#        else:
+#            print( "Request failed with status code:" , response.status_code )
+#            return
+#        # }}}
+#        return 
+#        # }}}
+
+
+
+
+
+
+
+
+
         bn = self.BufferName + "Search"
         x = vim.current.buffer.name
         if x != bn :
@@ -225,7 +265,7 @@ class PostJsonRPC:
             return
         # }}}
 
-        # print( "Response:" , result )
+        print( "Response:" , result )
         vim.command(':e '   + self.BufferName + "Results" )
         vim.command('setl buftype=nowrite' )
         vim.command('setl encoding=utf-8')
