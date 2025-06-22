@@ -24,15 +24,25 @@ endif
 command! -nargs=* RpcTemplate       call VimPostJsonRPC#pycmd('Template(<f-args>)')
 command! -nargs=* RpcSendAchive     call VimPostJsonRPC#pycmd('SendArchive(<f-args>)')
 command! -nargs=1 RpcSearchTags     call VimPostJsonRPC#pycmd('SearchTags(<q-args>)')
-" command! -nargs=0 RpcSearchArchive  call VimPostJsonRPC#pycmd('SearchTemplate()')
-command! -nargs=0 RpcSearchArchives  call VimPostJsonRPC#pycmd('SearchArchives()')
-" command! -nargs=0                                                       RPC   call VimPostJsonRPC#pycmd('Send(<f-args>)')
-" command! -nargs=? -complete=customlist,VimMarkdownWordpress#CompSave    BlogSave   call VimMarkdownWordpress#pycmd('BlogSave(<f-args>)')
-" 
-" command! -nargs=0                                                       BlogNew    call VimMarkdownWordpress#pycmd('BlogTemplate()')
-" command! -nargs=1                                                       BlogOpen   call VimMarkdownWordpress#pycmd('BlogOpen(<f-args>)')
-" "command! -nargs=1 -complete=customlist,CompSwitch                       BlogSwitch call VimMarkdownWordpress#pycmd('readConfig(<f-args>)')
-" "command! -nargs=1 -complete=file                                        BlogUpload call VimMarkdownWordpress#pycmd('blogPictureUploadCheck(<f-args>)')
-" command! -nargs=0                                                       BlogTest   call VimMarkdownWordpress#pycmd('BlogTest(<f-args>)')
-" command! -nargs=1 -complete=file                                        BlogMedia  call VimMarkdownWordpress#pycmd('BlogMedia(<f-args>)')
+command! -nargs=0 RpcSearchTemplate call VimPostJsonRPC#pycmd('SearchTemplate()')
+command! -nargs=0 RpcSearch         call VimPostJsonRPC#pycmd('Search()')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

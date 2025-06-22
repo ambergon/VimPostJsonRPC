@@ -10,174 +10,6 @@ import json
 import copy
 import re
 
-# "{{{
-# class PythonClass:
-#     BufferName = 'VimPostJsonRPC:/'
-#     BlogListNum         = 100
-#     def __init__( self ):
-#         ConfigPath = os.path.expanduser("~") + "/" + ".VimPostJsonRPC"
-# 
-#         if not os.path.exists( ConfigPath ):
-#             WriteConfig( ConfigPath )
-# 
-#         Config = ConfigParser()
-#         Config.read( ConfigPath )
-#         CoreSection = ConfigParser()
-#         CoreSection = Config[ "core" ]
-# 
-#         ##BlogList
-#         self.BlogListNum    = CoreSection[ "BlogListNum" ]
-# 
-#     #設定ファイルが存在しなければ。
-#     def WriteConfig( self , ConfigPath ):
-#         config = ConfigParser()
-#         config["core"] = { 
-#                 "MarkdownExtension"  : "extra,nl2br,"   ,
-#                 "BlogListNum"        : "100"            ,
-#                 "SetFileType"        : "markdown"       ,
-#                 }
-#         config["main"] = { 
-#                 "user"      : "user_name"           ,
-#                 "password"  : "wordpress_password"  ,
-#                 "url"       : "https://localhost:8080/index.php" ,
-#                 }
-#         with open( ConfigPath , "w" ) as ConfigText:
-#             config.write( ConfigText )
-# 
-# 
-#     def BlogTemplate( self , PostID = "" , FieldID = "" , TITLE = "" , CATE = "" , TAG = "" , FieldText = ""):
-#         #新しいファイルを開く
-#         if( PostID == "" ):
-#             vim.command( ':e '   + self.BufferName + "NewPost" )
-#         else:
-#             vim.command( ':e '   + self.BufferName + str(PostID) )
-# 
-#         vim.command('setl buftype=nowrite' )
-#         vim.command("setl encoding=utf-8")
-#         vim.command('setl syntax=blogsyntax')
-#         vim.command('setl filetype=' + self.FileType )
-# 
-#         del vim.current.buffer[:]
-#         vim.current.buffer.append( self.META_ME                             )
-#         vim.current.buffer.append( self.META_ID              + str(PostID)  )
-#         vim.current.buffer.append( self.META_CUSTOM_FIELD_ID + FieldID      )
-#         vim.current.buffer.append( self.META_YOU                            )
-#         vim.current.buffer.append( self.META_TITLE           + TITLE        )
-#         vim.current.buffer.append( self.META_CATEGORY        + CATE         )
-#         vim.current.buffer.append( self.META_TAGS            + TAG          )
-#         vim.current.buffer.append( self.META_END                            )
-#         #送られてきたテキストがあれば追加。
-#         for line in FieldText :
-#             #文末の空白を除去
-#             line = re.sub( ' +$' , '' , line )
-#             vim.current.buffer.append( line )
-# 
-#         del vim.current.buffer[0]
-#         return
-# 
-# 
-#     def BlogList( self ):
-#         args  = { "number" : self.BlogListNum , "offset" : 0 , }
-#         Posts = self.wp.call( GetPosts ( args ))
-# 
-#         vim.command( ":e " + self.BufferName + "List" )
-#         #vim.command( ":vs " + self.BufferName + "List" )
-# 
-#         #bufferが隠れたら削除
-#         vim.command( "setl bufhidden=delete" )
-#         #削除時に保存するか聞かない
-#         vim.command( "setl buftype=nowrite" )
-#         vim.command( "map <silent><buffer><enter>   :py3 VimPostJsonRPCInst.BlogOpen()<cr>" )
-#         #下記の形式でバッファに書き出す。
-#         #ID [publish] TITLE
-#         for Post in Posts:
-#             vim.current.buffer.append( Post.id + " [" + Post.post_status + "] " + Post.title )
-# 
-#         #一行目を削除
-#         del vim.current.buffer[0]
-#         #規定の行を末尾に。
-#         #これをenterしたときにさらに読み込めるように。
-#         vim.current.buffer.append( self.MoreList )
-# 
-# 
-#     def BlogListAdd( self ):
-#         #現在の行数分、最新投稿を取り除く。
-#         offset = len( vim.current.buffer ) - 1
-#         BlogArgs = { "number" : self.BlogListNum , "offset" : offset }
-#         Posts = self.wp.call(GetPosts( BlogArgs ))
-#         #List追加
-#         for Post in Posts:
-#             vim.current.buffer.append( Post.id + ' [' + Post.post_status + '] ' + Post.title )
-#         #最後の行/MoreListを削除
-#         del vim.current.buffer[offset]
-#         vim.current.buffer.append( self.MoreList )
-# 
-# 
-#     def BlogOpen( self , PostID = 0 ):
-#         #Listの再読み込み
-#         #BlogListBuffer && current.line MoreList
-#         if( PostID == 0 and vim.current.line == self.MoreList ):
-#             self.BlogListAdd()
-#             return
-#             
-#         #BlogListBuffer && IDから始まる行。
-#         if( PostID == 0):
-#             line = vim.current.line.split()
-#             #空白行処理
-#             if( len( line ) == 0 ):
-#                 print( 'line is none' )
-#                 return
-#             PostID = line[0]
-#         Post = self.wp.call( GetPost( PostID ) )
-# 
-#         #custom_fieldが存在しない場合
-#         if( len( Post.custom_fields ) == 0 ):
-#             print( 'not wiritten by this plugin' )
-#             return
-# 
-#         #CustomField一覧をチェック
-#         for CustomField in Post.custom_fields:
-#             #key = mkd_textが存在する
-#             if( self.CUSTOM_FIELD_KEY in CustomField.values() ):
-#                 #新しいファイルを開く
-#                 vim.command( ':e '   + self.BufferName + str( PostID ))
-#                 del vim.current.buffer[:]
-# 
-#                 #削除時に保存するか聞かない
-#                 vim.command( "setl buftype=nowrite"           )
-#                 vim.command( "setl encoding=utf-8"            )
-#                 vim.command( "setl syntax=blogsyntax"         )
-#                 vim.command( "setl filetype=" + self.FileType )
-# 
-#                 ##WPは内部的にカテゴリとタグを混同していたような気がする。
-#                 #記事事に正常にタグとカテゴリーを取得しなおすのが難しかった記憶。
-#                 #カテゴリ一覧をリスト
-#                 Categories =[]
-#                 CategoriesRaw = self.wp.call( GetTerms("PERSONS") )
-#                 for tag in CategoriesRaw:
-#                     Categories.append( str( tag ) )
-# 
-#                 #同名のカテゴリが存在するならcate/無ければtag
-#                 PostTags     = ""
-#                 PostCate     = ""
-#                 #タグにマッチするカテゴリが存在した場合、それをカテゴリとする。
-#                 for One in Post.terms:
-#                     PostTag = str( One )
-#                     if PostTag in Categories:
-#                         PostCate = PostCate + PostTag + ","
-#                     else:
-#                         PostTags = PostTags + PostTag + ","
-# 
-#                 FieldText = CustomField['value'].splitlines()
-#                 self.BlogTemplate( PostID , CustomField["id"] , Post.title , PostCate , PostTags , FieldText )
-#                 break
-# 
-# 
-# 
-# 
-# VimPostJsonRPCInst = PythonClass()
-# "}}}
-
 class PostJsonRPC:
     BufferName = 'VimPostJsonRPC://'
     #BlogListNum         = 100
@@ -204,19 +36,28 @@ class PostJsonRPC:
         "PUBLIC"    : "Public    :"                 ,
         "THOUGHTS"  : "[Thoughts] =================",
     }
+    SEARCH = {
+        "TITLE"     : "Title     :"                 ,
+        "PERSONS"   : "PERSONS   :"                 ,
+        "TAGS"      : "Tags      :"                 ,
+        "SINCE"     : "yyyy-mm-dd:"                 ,
+        "UNTIL"     : "yyyy-mm-dd:"                 ,
+    }
 
     # JSON-RPC
     PAYLOAD = {
             "jsonrpc"   : "2.0",
             "id"        : 1,
-            # "method"    : "add",
-            # "params"    : [42, 23],
     }
+
+
+
+    # {{{
     def __init__( self , URL , ID , PW ):
         self.URL = URL
         self.ID  = ID
         self.PW  = PW
-
+    # }}}
     # {{{
     def Template( self ):
         vim.command( ':e '   + self.BufferName + "Archive" )
@@ -245,6 +86,8 @@ class PostJsonRPC:
         vim.current.buffer.append( self.TEMPLATE['PUBLIC']   )
         vim.current.buffer.append( self.TEMPLATE['THOUGHTS'] )
         del vim.current.buffer[0]
+
+
     # }}}
     # {{{
     def SendArchive( self ):
@@ -253,20 +96,6 @@ class PostJsonRPC:
         if x != bn :
             print( "not buffer")
             return
-
-
-        # [Meta] =====================
-        # Title     :
-        # PERSONS   :
-        # Tags      :
-        # yyyy-mm-dd:
-        # https://  :
-        # https://  :
-        # [Thoughts] =================
-        # 現在のバッファを読み取って、送信用のjsonを作り上げる。
-        # 送信自体は一回でよい。
-        # これらを受け取って、分解し、複数のsqlに分けるのはphp側でよい。
-        # 上記のテンプレートに追加し、本文/感想を送信する必要がある。
 
         ID          = vim.current.buffer[1].replace( self.TEMPLATE['ID']       , "" , 1 )
         TITLE       = vim.current.buffer[3].replace( self.TEMPLATE['TITLE']    , "" , 1 )
@@ -316,6 +145,94 @@ class PostJsonRPC:
 
         else:
             print( "Request failed with status code:" , response.status_code )
+
+
+    # }}}
+    # {{{
+    def SearchTemplate( self ):
+        vim.command(':e '   + self.BufferName + "Search" )
+        vim.command('setl buftype=nowrite' )
+        vim.command('setl encoding=utf-8')
+        vim.command('setl filetype=markdown' )
+        vim.command('setl bufhidden=delete' )
+
+        del vim.current.buffer[:]
+        vim.current.buffer.append( self.SEARCH["TITLE"  ]          )
+        vim.current.buffer.append( self.SEARCH["PERSONS"]          )
+        vim.current.buffer.append( self.SEARCH["TAGS"   ]          )
+        vim.current.buffer.append( self.SEARCH["SINCE"  ]          )
+        vim.current.buffer.append( self.SEARCH["UNTIL"  ]          )
+        del vim.current.buffer[0]
+
+    # }}}
+    # {{{
+    def Search( self ):
+        bn = self.BufferName + "Search"
+        x = vim.current.buffer.name
+        if x != bn :
+            print( "not buffer")
+            return
+
+        TITLE       = vim.current.buffer[0].replace( self.SEARCH["TITLE"  ] , "" , 1 )
+        PERSONS     = vim.current.buffer[1].replace( self.SEARCH["PERSONS"] , "" , 1 )
+        TAGS        = vim.current.buffer[2].replace( self.SEARCH["TAGS"   ] , "" , 1 )
+        SINCE       = vim.current.buffer[3].replace( self.SEARCH["SINCE"  ] , "" , 1 )
+        UNTIL       = vim.current.buffer[4].replace( self.SEARCH["UNTIL"  ] , "" , 1 )
+
+        TAGS            = re.sub( r',$' , '' , TAGS )
+        TAGS            = re.sub( r'^,' , '' , TAGS )
+        PERSONS         = re.sub( r',$' , '' , PERSONS )
+        PERSONS         = re.sub( r'^,' , '' , PERSONS )
+        tags_array      = TAGS.split( "," )
+        persons_array   = PERSONS.split( "," )
+
+        PAYLOAD = copy.deepcopy( self.PAYLOAD )
+        PAYLOAD[ 'method' ]  = "Search"
+        PAYLOAD[ 'params' ] = {
+            "TITLE"     : TITLE         ,
+            "TAGS"      : tags_array    ,   
+            "PERSONS"   : persons_array , 
+            "START"     : SINCE         ,
+            "END"       : UNTIL         ,
+        }
+        headers = {
+            "Content-Type": "application/json"
+        }
+        # リクエストを送信
+        response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
+        if self.ID != "" and self.PW != "" :
+            # print( "ID/PW mode" )
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ))
+
+        # レスポンスの処理
+        result = []
+        # {{{
+        if response.status_code == 200:
+            try:
+                result = response.json()
+                # print( "Response:" , result )
+            except ValueError:
+                print( "Response is not a valid JSON" )
+                return
+
+        else:
+            print( "Request failed with status code:" , response.status_code )
+            return
+        # }}}
+
+        # print( "Response:" , result )
+        vim.command(':e '   + self.BufferName + "Results" )
+        vim.command('setl buftype=nowrite' )
+        vim.command('setl encoding=utf-8')
+        vim.command('setl filetype=markdown' )
+        vim.command('setl bufhidden=delete' )
+        vim.command('map <silent><buffer><enter>   :py3 VimPostJsonRPCInst.GetArchive()<cr>' )
+        del vim.current.buffer[:]
+        for record in result[ 'result' ]:
+            vim.current.buffer.append( "[" + record[ 'time' ] + "]" + str( record[ 'id' ] )  + ":" + record[ 'title' ] )
+        del vim.current.buffer[0]
+
+
     # }}}
     # {{{
     def SearchTags( self , args ):
@@ -355,12 +272,12 @@ class PostJsonRPC:
         # }}}
 
         # print( "Response:" , result )
-        vim.command( ':e '   + self.BufferName + "Results" )
+        vim.command(':e '   + self.BufferName + "Results" )
         vim.command('setl buftype=nowrite' )
-        vim.command("setl encoding=utf-8")
+        vim.command('setl encoding=utf-8')
         vim.command('setl filetype=markdown' )
-        vim.command("setl bufhidden=delete" )
-        vim.command("map <silent><buffer><enter>   :py3 VimPostJsonRPCInst.GetArchive()<cr>" )
+        vim.command('setl bufhidden=delete' )
+        vim.command('map <silent><buffer><enter>   :py3 VimPostJsonRPCInst.GetArchive()<cr>' )
         del vim.current.buffer[:]
         for record in result[ 'result' ]:
             vim.current.buffer.append( "[" + record[ 'time' ] + "]" + str( record[ 'id' ] )  + ":" + record[ 'title' ] )
@@ -370,21 +287,13 @@ class PostJsonRPC:
 
 
     # }}}
-    # "{{{
+    # {{{
     def GetArchive( self ):
-        #BlogListBuffer && current.line MoreList
-        #if( PostID == 0 and vim.current.line == self.MoreList ):
-        #self.BlogListAdd()
-        #return
-
-        ##BlogListBuffer && IDから始まる行。
-        #if( PostID == 0):
         archive_id = vim.current.line
         archive_id = re.sub( r'\[.*\]' , "" , archive_id )
         # archive_id = re.sub( "\[.*\]" , "" , archive_id )
         archive_id = re.sub( ":.*"    , "" , archive_id )
 
-        # print( archive_id )
         PAYLOAD = copy.deepcopy( self.PAYLOAD )
         # 適当に空白を除去する必要がある。
         PAYLOAD[ 'method' ]  = "GetArchive"
@@ -416,12 +325,12 @@ class PostJsonRPC:
         # }}}
 
         archive = result[ 'result' ]
-        print( archive )
+        # print( archive )
         vim.command(':e '   + self.BufferName + "Archive" )
         vim.command('setl buftype=nowrite' )
-        vim.command("setl encoding=utf-8")
+        vim.command('setl encoding=utf-8')
         vim.command('setl filetype=markdown' )
-        vim.command("setl bufhidden=delete" )
+        vim.command('setl bufhidden=delete' )
         del vim.current.buffer[:]
         vim.current.buffer.append( self.TEMPLATE['DONT']     )
         vim.current.buffer.append( self.TEMPLATE['ID']       + archive[ 'id' ] )
@@ -439,65 +348,7 @@ class PostJsonRPC:
             vim.current.buffer.append( line )
         del vim.current.buffer[0]
 
-    # "}}}
-    def SearchArchives( self ):
-        # bn = self.BufferName + "Archive"
-        # x = vim.current.buffer.name
-        # if x != bn :
-        #     print( "not buffer")
-        #     return
-        # TITLE       = vim.current.buffer[3].replace( self.TEMPLATE['TITLE']    , "" , 1 )
-        # PERSONS     = vim.current.buffer[4].replace( self.TEMPLATE['PERSONS']  , "" , 1 )
-        # TAGS        = vim.current.buffer[5].replace( self.TEMPLATE['TAGS']     , "" , 1 )
-        # DATE        = vim.current.buffer[6].replace( self.TEMPLATE['DATE']     , "" , 1 )
-
-        PAYLOAD = copy.deepcopy( self.PAYLOAD )
-        PAYLOAD[ 'method' ]  = "SearchTemplate"
-        PAYLOAD[ 'params' ] = {
-            "TITLE"     : "",
-            "TAGS"      : [ "aa","bb" ],
-            "PERSONS"   : [ "aa","bb" ],
-            "START"     : "2000-1-1",
-            "END"       : "2000-1-1",
-        }
-        headers = {
-            "Content-Type": "application/json"
-        }
-        # リクエストを送信
-        response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
-        if self.ID != "" and self.PW != "" :
-            # print( "ID/PW mode" )
-            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ))
-
-        # レスポンスの処理
-        result = []
-        # {{{
-        if response.status_code == 200:
-            try:
-                result = response.json()
-                # print( "Response:" , result )
-            except ValueError:
-                print( "Response is not a valid JSON" )
-                return
-
-        else:
-            print( "Request failed with status code:" , response.status_code )
-            return
-        # }}}
-
-        print( "Response:" , result )
-        # vim.command( ':e '   + self.BufferName + "Results" )
-        # vim.command('setl buftype=nowrite' )
-        # vim.command("setl encoding=utf-8")
-        # vim.command('setl filetype=markdown' )
-        # vim.command("setl bufhidden=delete" )
-        # vim.command("map <silent><buffer><enter>   :py3 VimPostJsonRPCInst.GetArchive()<cr>" )
-        # del vim.current.buffer[:]
-        # for record in result[ 'result' ]:
-        #     vim.current.buffer.append( "[" + record[ 'time' ] + "]" + str( record[ 'id' ] )  + ":" + record[ 'title' ] )
-        # del vim.current.buffer[0]
-
-
+    # }}}
 
 
 
