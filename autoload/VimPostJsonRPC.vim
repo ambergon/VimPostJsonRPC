@@ -135,16 +135,21 @@ class PostJsonRPC:
             # print( "ID/PW mode" )
             response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ))
 
+        result = []
         # レスポンスの処理
         if response.status_code == 200:
             try:
                 result = response.json()
-                print( "Response:" , result )
+                # print( "Response:" , result )
             except ValueError:
                 print( "Response is not a valid JSON" )
+                return
 
         else:
             print( "Request failed with status code:" , response.status_code )
+            return
+
+        vim.current.buffer[1] = self.TEMPLATE[ 'ID' ] + str( result[ 'result' ] )
 
 
     # }}}
