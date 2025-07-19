@@ -1,7 +1,8 @@
 " 設定が必要な項目
-let g:VimPostJsonRPC_URL="http://localhost:8080/index.php"
-let g:VimPostJsonRPC_ID=""
-let g:VimPostJsonRPC_PW=""
+let g:VimPostJsonRPC_URL="https://wgarden.sakura.ne.jp/HumansSystem/index.php"
+" let g:VimPostJsonRPC_URL="http://localhost:8080/index.php"
+let g:VimPostJsonRPC_ID="WhoAreYou"
+let g:VimPostJsonRPC_PW="DiveToDe"
 python3 << EOF
 # -*- coding: utf-8 -*-
 import vim
@@ -9,6 +10,7 @@ import requests
 import json
 import copy
 import re
+import threading
 
 class PostJsonRPC:
     BufferName = 'VimPostJsonRPC://'
@@ -46,8 +48,8 @@ class PostJsonRPC:
 
     # JSON-RPC
     PAYLOAD = {
-            "jsonrpc"   : "2.0",
-            "id"        : 1,
+        "jsonrpc"   : "2.0",
+        "id"        : 1,
     }
 
 
@@ -58,6 +60,7 @@ class PostJsonRPC:
         self.ID  = ID
         self.PW  = PW
     # }}}
+    # 記事投稿用のテンプレートを設置する。
     # {{{
     def Template( self ):
         vim.command( ':e '   + self.BufferName + "Archive" )
@@ -89,8 +92,63 @@ class PostJsonRPC:
 
 
     # }}}
+    # 送信が失敗した際に下書きを復旧する。
     # {{{
-    def SendArchive( self ):
+    def Retemplate( self , PAYLOAD ):
+        vim.command( ':sp '   + self.BufferName + "ReArchive" )
+        vim.command('setl buftype=nowrite' )
+        vim.command("setl encoding=utf-8")
+        vim.command('setl filetype=markdown' )
+        vim.command("setl bufhidden=delete" )
+
+
+        del vim.current.buffer[:]
+        vim.current.buffer.append( self.TEMPLATE['DONT']                                    )
+        vim.current.buffer.append( self.TEMPLATE['ID']       + PAYLOAD[ 'params' ][ 'ID' ]  )
+        vim.current.buffer.append( self.TEMPLATE['META']                                    )
+        vim.current.buffer.append( self.TEMPLATE['TITLE']    + PAYLOAD[ 'params' ][ 'TITLE' ])
+        vim.current.buffer.append( self.TEMPLATE['PERSONS']  + PAYLOAD[ 'params' ][ 'PERSONS' ])
+        vim.current.buffer.append( self.TEMPLATE['TAGS']     + PAYLOAD[ 'params' ][ 'TAGS' ])
+        vim.current.buffer.append( self.TEMPLATE['DATE']     + PAYLOAD[ 'params' ][ 'DATE' ])
+        vim.current.buffer.append( self.TEMPLATE['URL']      + PAYLOAD[ 'params' ][ 'URL' ] )
+        vim.current.buffer.append( self.TEMPLATE['PRIVATE']  + PAYLOAD[ 'params' ][ 'PRIVATE' ])
+        vim.current.buffer.append( self.TEMPLATE['PUBLIC']   + PAYLOAD[ 'params' ][ 'PUBLIC' ])
+        vim.current.buffer.append( self.TEMPLATE['THOUGHTS']        )
+        vim.current.buffer.append( PAYLOAD[ 'params' ][ 'TEXT' ]    )
+        del vim.current.buffer[0]
+    # }}}
+    # 非同期で記事を送信する。
+    # {{{
+    def ThreadPush( self , headers , PAYLOAD ):
+        # response = requests.post(url, headers=headers, data=json.dumps(payload))
+        if self.ID != "" and self.PW != "" :
+            # print( "ID/PW mode" )
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ))
+            print(response.status_code)
+        else:
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
+            print(response.status_code)
+
+        result = []
+        # レスポンスの処理
+        if response.status_code == 200:
+            try:
+                result = response.json()
+                # print( "Response:" , result )
+            except ValueError:
+                print( "Response is not a valid JSON" )
+                return
+
+        else:
+            print( "Request failed with status code:" , response.status_code )
+            self.Retemplate( PAYLOAD )
+            return
+        print( "done : "  + str( result[ 'result' ] ) )
+        return
+    # }}}
+    # 記事テンプレートを送信する。
+    # {{{
+    def PushArchive( self ):
         bn = self.BufferName + "Archive"
         x = vim.current.buffer.name
         if x != bn :
@@ -130,29 +188,35 @@ class PostJsonRPC:
             "Content-Type": "application/json"
         }
         # リクエストを送信
-        response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
-        if self.ID != "" and self.PW != "" :
-            # print( "ID/PW mode" )
-            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ))
+        thread = threading.Thread( target=self.ThreadPush , args=( headers , PAYLOAD ))
+        thread.start()
 
-        result = []
-        # レスポンスの処理
-        if response.status_code == 200:
-            try:
-                result = response.json()
-                # print( "Response:" , result )
-            except ValueError:
-                print( "Response is not a valid JSON" )
-                return
+        # if self.ID != "" and self.PW != "" :
+        #     # print( "ID/PW mode" )
+        #     response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ))
+        # else:
+        #     response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
 
-        else:
-            print( "Request failed with status code:" , response.status_code )
-            return
+        # result = []
+        # # レスポンスの処理
+        # if response.status_code == 200:
+        #     try:
+        #         result = response.json()
+        #         # print( "Response:" , result )
+        #     except ValueError:
+        #         print( "Response is not a valid JSON" )
+        #         return
 
-        vim.current.buffer[1] = self.TEMPLATE[ 'ID' ] + str( result[ 'result' ] )
+        # else:
+        #     print( "Request failed with status code:" , response.status_code )
+        #     return
+
+        # vim.current.buffer[1] = self.TEMPLATE[ 'ID' ] + str( result[ 'result' ] )
+
 
 
     # }}}
+    # 検索用のテンプレートを表示する。
     # {{{
     def SearchTemplate( self ):
         vim.command(':e '   + self.BufferName + "Search" )
@@ -170,47 +234,9 @@ class PostJsonRPC:
         del vim.current.buffer[0]
 
     # }}}
+    # テンプレートを読み込み、検索する。
     # {{{
     def Search( self ):
-#        # {{{
-#        # テスト
-#        PAYLOAD = copy.deepcopy( self.PAYLOAD )
-#        PAYLOAD[ 'method' ]  = "Search"
-#        PAYLOAD[ 'params' ] = {
-#        }
-#        headers = {
-#            "Content-Type": "application/json"
-#        }
-#        # リクエストを送信
-#        response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
-#        if self.ID != "" and self.PW != "" :
-#            # print( "ID/PW mode" )
-#            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ))
-#
-#        # レスポンスの処理
-#        result = []
-#        # {{{
-#        if response.status_code == 200:
-#            try:
-#                result = response.json()
-#            except ValueError:
-#                print( "Response is not a valid JSON" )
-#                return
-#
-#        else:
-#            print( "Request failed with status code:" , response.status_code )
-#            return
-#        # }}}
-#        return 
-#        # }}}
-
-
-
-
-
-
-
-
 
         bn = self.BufferName + "Search"
         x = vim.current.buffer.name
@@ -265,7 +291,7 @@ class PostJsonRPC:
             return
         # }}}
 
-        print( "Response:" , result )
+        # print( "Response:" , result )
         vim.command(':e '   + self.BufferName + "Results" )
         vim.command('setl buftype=nowrite' )
         vim.command('setl encoding=utf-8')
@@ -279,6 +305,7 @@ class PostJsonRPC:
 
 
     # }}}
+    # コマンドラインから記事を検索する。
     # {{{
     def SearchTags( self , args ):
         if len( args ) == 0 :
@@ -332,6 +359,8 @@ class PostJsonRPC:
 
 
     # }}}
+    # 他のコマンドから使用する。
+    # 現在のカーソル行のIDの記事を読み込む。 
     # {{{
     def GetArchive( self ):
         archive_id = vim.current.line
@@ -392,6 +421,43 @@ class PostJsonRPC:
         for line in archive[ 'think' ].splitlines():
             vim.current.buffer.append( line )
         del vim.current.buffer[0]
+
+    # }}}
+    # 指定したIDの記事を削除する。
+    # {{{
+    def DeleteArchive( self , id ):
+
+
+        PAYLOAD = copy.deepcopy( self.PAYLOAD )
+        # 適当に空白を除去する必要がある。
+        PAYLOAD[ 'method' ]  = "DeleteArchive"
+        PAYLOAD[ 'params' ]  = {
+            "ID"        : id       , 
+        }
+        headers = {
+            "Content-Type": "application/json"
+        }
+        # リクエストを送信
+        # {{{
+        response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
+        if self.ID != "" and self.PW != "" :
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ))
+        # }}}
+        # レスポンスの処理
+        result = []
+        # {{{
+        if response.status_code == 200:
+            try:
+                result = response.json()
+                print( "Response:" , result[ 'result' ] )
+            except ValueError:
+                print( "Response is not a valid JSON" )
+                return
+
+        else:
+            print( "Request failed with status code:" , response.status_code )
+            return
+        # }}}
 
     # }}}
 
