@@ -34,8 +34,6 @@ class PostJsonRPC:
         "TAGS"      : "Tags      :"                 ,
         "DATE"      : "yyyy-mm-dd:"                 ,
         "URL"       : "Default   :"                 ,
-        "PRIVATE"   : "Private   :"                 ,
-        "PUBLIC"    : "Public    :"                 ,
         "THOUGHTS"  : "[Thoughts] =================",
     }
     SEARCH = {
@@ -85,8 +83,6 @@ class PostJsonRPC:
         vim.current.buffer.append( self.TEMPLATE['TAGS']     )
         vim.current.buffer.append( self.TEMPLATE['DATE']     )
         vim.current.buffer.append( self.TEMPLATE['URL']      )
-        vim.current.buffer.append( self.TEMPLATE['PRIVATE']  )
-        vim.current.buffer.append( self.TEMPLATE['PUBLIC']   )
         vim.current.buffer.append( self.TEMPLATE['THOUGHTS'] )
         del vim.current.buffer[0]
 
@@ -95,7 +91,7 @@ class PostJsonRPC:
     # 送信が失敗した際に下書きを復旧する。
     # {{{
     def Retemplate( self , PAYLOAD ):
-        vim.command( ':sp '   + self.BufferName + "ReArchive" )
+        vim.command(':sp '   + self.BufferName + "ReArchive" )
         vim.command('setl buftype=nowrite' )
         vim.command("setl encoding=utf-8")
         vim.command('setl filetype=markdown' )
@@ -111,8 +107,6 @@ class PostJsonRPC:
         vim.current.buffer.append( self.TEMPLATE['TAGS']     + PAYLOAD[ 'params' ][ 'TAGS' ])
         vim.current.buffer.append( self.TEMPLATE['DATE']     + PAYLOAD[ 'params' ][ 'DATE' ])
         vim.current.buffer.append( self.TEMPLATE['URL']      + PAYLOAD[ 'params' ][ 'URL' ] )
-        vim.current.buffer.append( self.TEMPLATE['PRIVATE']  + PAYLOAD[ 'params' ][ 'PRIVATE' ])
-        vim.current.buffer.append( self.TEMPLATE['PUBLIC']   + PAYLOAD[ 'params' ][ 'PUBLIC' ])
         vim.current.buffer.append( self.TEMPLATE['THOUGHTS']        )
         vim.current.buffer.append( PAYLOAD[ 'params' ][ 'TEXT' ]    )
         del vim.current.buffer[0]
@@ -161,9 +155,7 @@ class PostJsonRPC:
         TAGS        = vim.current.buffer[5].replace( self.TEMPLATE['TAGS']     , "" , 1 )
         DATE        = vim.current.buffer[6].replace( self.TEMPLATE['DATE']     , "" , 1 )
         URL         = vim.current.buffer[7].replace( self.TEMPLATE['URL']      , "" , 1 )
-        PRIVATE     = vim.current.buffer[8].replace( self.TEMPLATE['PRIVATE']  , "" , 1 )
-        PUBLIC      = vim.current.buffer[9].replace( self.TEMPLATE['PUBLIC']   , "" , 1 )
-        BUFFER      = vim.current.buffer[11:]
+        BUFFER      = vim.current.buffer[9:]
         TEXT        = ""
         for line in BUFFER:
             TEXT = TEXT + line + "\n"
@@ -178,8 +170,6 @@ class PostJsonRPC:
             "TAGS"      : TAGS     , 
             "DATE"      : DATE     , 
             "URL"       : URL      , 
-            "PRIVATE"   : PRIVATE  , 
-            "PUBLIC"    : PUBLIC   , 
             "TEXT"      : TEXT     , 
         }
 
@@ -414,8 +404,6 @@ class PostJsonRPC:
         vim.current.buffer.append( self.TEMPLATE['TAGS']     + archive[ 'tags' ] )
         vim.current.buffer.append( self.TEMPLATE['DATE']     + archive[ 'date' ] )
         vim.current.buffer.append( self.TEMPLATE['URL']      + archive[ 'url' ] )
-        vim.current.buffer.append( self.TEMPLATE['PRIVATE']  + archive[ 'private' ] )
-        vim.current.buffer.append( self.TEMPLATE['PUBLIC']   + archive[ 'public' ] )
         vim.current.buffer.append( self.TEMPLATE['THOUGHTS'] )
         # vim.current.buffer.append( archive[ 'think' ] )
         for line in archive[ 'think' ].splitlines():
