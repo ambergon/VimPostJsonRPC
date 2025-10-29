@@ -1,11 +1,4 @@
 " 設定が必要な項目
-" let g:VimPostJsonRPC_URL="https://wgarden.sakura.ne.jp/HumansSystem/index.php"
-" let g:VimPostJsonRPC_URL="http://localhost:8080/index.php"
-let g:VimPostJsonRPC_URL="https://json.gembaronsgallery.com/"
-let g:VimPostJsonRPC_ID=""
-let g:VimPostJsonRPC_PW=""
-"let g:VimPostJsonRPC_ID="WhoAreYou"
-"let g:VimPostJsonRPC_PW="DiveToDe"
 python3 << EOF
 # -*- coding: utf-8 -*-
 import vim
