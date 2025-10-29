@@ -1,8 +1,11 @@
 " 設定が必要な項目
-let g:VimPostJsonRPC_URL="https://wgarden.sakura.ne.jp/HumansSystem/index.php"
+" let g:VimPostJsonRPC_URL="https://wgarden.sakura.ne.jp/HumansSystem/index.php"
 " let g:VimPostJsonRPC_URL="http://localhost:8080/index.php"
-let g:VimPostJsonRPC_ID="WhoAreYou"
-let g:VimPostJsonRPC_PW="DiveToDe"
+let g:VimPostJsonRPC_URL="https://json.gembaronsgallery.com/"
+let g:VimPostJsonRPC_ID=""
+let g:VimPostJsonRPC_PW=""
+"let g:VimPostJsonRPC_ID="WhoAreYou"
+"let g:VimPostJsonRPC_PW="DiveToDe"
 python3 << EOF
 # -*- coding: utf-8 -*-
 import vim
@@ -33,7 +36,6 @@ class PostJsonRPC:
         "PERSONS"   : "PERSONS   :"                 ,
         "TAGS"      : "Tags      :"                 ,
         "DATE"      : "yyyy-mm-dd:"                 ,
-        "URL"       : "Default   :"                 ,
         "THOUGHTS"  : "[Thoughts] =================",
     }
     SEARCH = {
@@ -82,7 +84,6 @@ class PostJsonRPC:
         vim.current.buffer.append( self.TEMPLATE['PERSONS']  )
         vim.current.buffer.append( self.TEMPLATE['TAGS']     )
         vim.current.buffer.append( self.TEMPLATE['DATE']     )
-        vim.current.buffer.append( self.TEMPLATE['URL']      )
         vim.current.buffer.append( self.TEMPLATE['THOUGHTS'] )
         del vim.current.buffer[0]
 
@@ -106,7 +107,6 @@ class PostJsonRPC:
         vim.current.buffer.append( self.TEMPLATE['PERSONS']  + PAYLOAD[ 'params' ][ 'PERSONS' ])
         vim.current.buffer.append( self.TEMPLATE['TAGS']     + PAYLOAD[ 'params' ][ 'TAGS' ])
         vim.current.buffer.append( self.TEMPLATE['DATE']     + PAYLOAD[ 'params' ][ 'DATE' ])
-        vim.current.buffer.append( self.TEMPLATE['URL']      + PAYLOAD[ 'params' ][ 'URL' ] )
         vim.current.buffer.append( self.TEMPLATE['THOUGHTS']        )
         vim.current.buffer.append( PAYLOAD[ 'params' ][ 'TEXT' ]    )
         del vim.current.buffer[0]
@@ -154,22 +154,20 @@ class PostJsonRPC:
         PERSONS     = vim.current.buffer[4].replace( self.TEMPLATE['PERSONS']  , "" , 1 )
         TAGS        = vim.current.buffer[5].replace( self.TEMPLATE['TAGS']     , "" , 1 )
         DATE        = vim.current.buffer[6].replace( self.TEMPLATE['DATE']     , "" , 1 )
-        URL         = vim.current.buffer[7].replace( self.TEMPLATE['URL']      , "" , 1 )
-        BUFFER      = vim.current.buffer[9:]
+        BUFFER      = vim.current.buffer[8:]
         TEXT        = ""
         for line in BUFFER:
             TEXT = TEXT + line + "\n"
 
         PAYLOAD = copy.deepcopy( self.PAYLOAD )
         # 適当に空白を除去する必要がある。
-        PAYLOAD[ 'method' ]  = "AddArchive"
+        PAYLOAD[ 'method' ]  = "archiveAdd"
         PAYLOAD[ 'params' ]  = {
             "ID"        : ID       , 
             "TITLE"     : TITLE    , 
             "PERSONS"   : PERSONS  , 
             "TAGS"      : TAGS     , 
             "DATE"      : DATE     , 
-            "URL"       : URL      , 
             "TEXT"      : TEXT     , 
         }
 
@@ -178,30 +176,30 @@ class PostJsonRPC:
             "Content-Type": "application/json"
         }
         # リクエストを送信
-        thread = threading.Thread( target=self.ThreadPush , args=( headers , PAYLOAD ))
-        thread.start()
+        # thread = threading.Thread( target=self.ThreadPush , args=( headers , PAYLOAD ))
+        # thread.start()
 
-        # if self.ID != "" and self.PW != "" :
-        #     # print( "ID/PW mode" )
-        #     response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ))
-        # else:
-        #     response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
+        if self.ID != "" and self.PW != "" :
+            # print( "ID/PW mode" )
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ))
+        else:
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
 
-        # result = []
-        # # レスポンスの処理
-        # if response.status_code == 200:
-        #     try:
-        #         result = response.json()
-        #         # print( "Response:" , result )
-        #     except ValueError:
-        #         print( "Response is not a valid JSON" )
-        #         return
+        result = []
+        # レスポンスの処理
+        if response.status_code == 200:
+            try:
+                result = response.json()
+                # print( "Response:" , result )
+            except ValueError:
+                print( "Response is not a valid JSON" )
+                return
 
-        # else:
-        #     print( "Request failed with status code:" , response.status_code )
-        #     return
+        else:
+            print( "Request failed with status code:" , response.status_code )
+            return
 
-        # vim.current.buffer[1] = self.TEMPLATE[ 'ID' ] + str( result[ 'result' ] )
+        vim.current.buffer[1] = self.TEMPLATE[ 'ID' ] + str( result[ 'result' ] )
 
 
 
@@ -248,7 +246,7 @@ class PostJsonRPC:
         persons_array   = PERSONS.split( "," )
 
         PAYLOAD = copy.deepcopy( self.PAYLOAD )
-        PAYLOAD[ 'method' ]  = "Search"
+        PAYLOAD[ 'method' ]  = "archiveSearch"
         PAYLOAD[ 'params' ] = {
             "TITLE"     : TITLE         ,
             "TAGS"      : tags_array    ,   
@@ -304,7 +302,7 @@ class PostJsonRPC:
         tags_array = args.split( "," )
 
         PAYLOAD = copy.deepcopy( self.PAYLOAD )
-        PAYLOAD[ 'method' ]  = "SearchTags"
+        PAYLOAD[ 'method' ]  = "archiveSearchTag"
         PAYLOAD[ 'params' ] = {
             "TAGS" : tags_array
         }
@@ -360,7 +358,7 @@ class PostJsonRPC:
 
         PAYLOAD = copy.deepcopy( self.PAYLOAD )
         # 適当に空白を除去する必要がある。
-        PAYLOAD[ 'method' ]  = "GetArchive"
+        PAYLOAD[ 'method' ]  = "archiveOpen"
         PAYLOAD[ 'params' ]  = {
             "ID"        : archive_id       , 
         }
@@ -403,7 +401,6 @@ class PostJsonRPC:
         vim.current.buffer.append( self.TEMPLATE['PERSONS']  + archive[ 'persons' ] )
         vim.current.buffer.append( self.TEMPLATE['TAGS']     + archive[ 'tags' ] )
         vim.current.buffer.append( self.TEMPLATE['DATE']     + archive[ 'date' ] )
-        vim.current.buffer.append( self.TEMPLATE['URL']      + archive[ 'url' ] )
         vim.current.buffer.append( self.TEMPLATE['THOUGHTS'] )
         # vim.current.buffer.append( archive[ 'think' ] )
         for line in archive[ 'think' ].splitlines():
@@ -418,7 +415,7 @@ class PostJsonRPC:
 
         PAYLOAD = copy.deepcopy( self.PAYLOAD )
         # 適当に空白を除去する必要がある。
-        PAYLOAD[ 'method' ]  = "DeleteArchive"
+        PAYLOAD[ 'method' ]  = "deleteArchive"
         PAYLOAD[ 'params' ]  = {
             "ID"        : id       , 
         }
