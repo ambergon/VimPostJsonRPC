@@ -1,4 +1,3 @@
-" 設定が必要な項目
 python3 << EOF
 # -*- coding: utf-8 -*-
 import vim
@@ -7,6 +6,15 @@ import json
 import copy
 import re
 import threading
+
+
+# response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , verify=False ) SSL認証をしない場合の処理で、警告が出るのを止める。
+"{{{
+import urllib3
+from urllib3.exceptions import InsecureRequestWarning
+urllib3.disable_warnings(InsecureRequestWarning)
+"}}}
+
 
 class PostJsonRPC:
     BufferName = 'VimPostJsonRPC://'
@@ -104,16 +112,15 @@ class PostJsonRPC:
         vim.current.buffer.append( PAYLOAD[ 'params' ][ 'TEXT' ]    )
         del vim.current.buffer[0]
     # }}}
-    # 非同期で記事を送信する。
+    # 記事を送信する。
     # {{{
     def ThreadPush( self , headers , PAYLOAD ):
-        # response = requests.post(url, headers=headers, data=json.dumps(payload))
         if self.ID != "" and self.PW != "" :
             # print( "ID/PW mode" )
-            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ))
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ) , verify=False )
             print(response.status_code)
         else:
-            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , verify=False )
             print(response.status_code)
 
         result = []
@@ -174,9 +181,9 @@ class PostJsonRPC:
 
         if self.ID != "" and self.PW != "" :
             # print( "ID/PW mode" )
-            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ))
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ) , verify=False )
         else:
-            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , verify=False )
 
         result = []
         # レスポンスの処理
@@ -251,10 +258,11 @@ class PostJsonRPC:
             "Content-Type": "application/json"
         }
         # リクエストを送信
-        response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
         if self.ID != "" and self.PW != "" :
             # print( "ID/PW mode" )
-            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ))
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ) , verify=False )
+        else:
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , verify=False )
 
         # レスポンスの処理
         result = []
@@ -303,10 +311,11 @@ class PostJsonRPC:
             "Content-Type": "application/json"
         }
         # リクエストを送信
-        response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
         if self.ID != "" and self.PW != "" :
             # print( "ID/PW mode" )
-            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ))
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ) , verify=False )
+        else:
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , verify=False )
 
         # レスポンスの処理
         result = []
@@ -360,9 +369,10 @@ class PostJsonRPC:
         }
         # リクエストを送信
         # {{{
-        response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
         if self.ID != "" and self.PW != "" :
-            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ))
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ) , verify=False )
+        else:
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , verify=False )
         # }}}
         # レスポンスの処理
         result = []
@@ -417,9 +427,10 @@ class PostJsonRPC:
         }
         # リクエストを送信
         # {{{
-        response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
         if self.ID != "" and self.PW != "" :
-            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ))
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ) , verify=False )
+        else:
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , verify=False )
         # }}}
         # レスポンスの処理
         result = []
