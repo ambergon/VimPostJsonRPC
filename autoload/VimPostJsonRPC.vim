@@ -9,11 +9,11 @@ import threading
 
 
 # response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , verify=False ) SSL認証をしない場合の処理で、警告が出るのを止める。
-"{{{
-import urllib3
-from urllib3.exceptions import InsecureRequestWarning
-urllib3.disable_warnings(InsecureRequestWarning)
-"}}}
+# import urllib3
+# from urllib3.exceptions import InsecureRequestWarning
+# urllib3.disable_warnings(InsecureRequestWarning)
+# ssl周りのエラーは下記を導入することで解決できる。
+# pip install pip-system-certs
 
 
 class PostJsonRPC:
@@ -112,34 +112,6 @@ class PostJsonRPC:
         vim.current.buffer.append( PAYLOAD[ 'params' ][ 'TEXT' ]    )
         del vim.current.buffer[0]
     # }}}
-    # 記事を送信する。
-    # {{{
-    def ThreadPush( self , headers , PAYLOAD ):
-        if self.ID != "" and self.PW != "" :
-            # print( "ID/PW mode" )
-            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ) , verify=False )
-            print(response.status_code)
-        else:
-            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , verify=False )
-            print(response.status_code)
-
-        result = []
-        # レスポンスの処理
-        if response.status_code == 200:
-            try:
-                result = response.json()
-                # print( "Response:" , result )
-            except ValueError:
-                print( "Response is not a valid JSON" )
-                return
-
-        else:
-            print( "Request failed with status code:" , response.status_code )
-            self.Retemplate( PAYLOAD )
-            return
-        print( "done : "  + str( result[ 'result' ] ) )
-        return
-    # }}}
     # 記事テンプレートを送信する。
     # {{{
     def PushArchive( self ):
@@ -181,9 +153,10 @@ class PostJsonRPC:
 
         if self.ID != "" and self.PW != "" :
             # print( "ID/PW mode" )
-            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ) , verify=False )
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ) )
+            # response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ) , verify=False )
         else:
-            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , verify=False )
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
 
         result = []
         # レスポンスの処理
@@ -260,9 +233,9 @@ class PostJsonRPC:
         # リクエストを送信
         if self.ID != "" and self.PW != "" :
             # print( "ID/PW mode" )
-            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ) , verify=False )
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ) )
         else:
-            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , verify=False )
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
 
         # レスポンスの処理
         result = []
@@ -313,9 +286,9 @@ class PostJsonRPC:
         # リクエストを送信
         if self.ID != "" and self.PW != "" :
             # print( "ID/PW mode" )
-            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ) , verify=False )
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ) )
         else:
-            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , verify=False )
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
 
         # レスポンスの処理
         result = []
@@ -370,9 +343,9 @@ class PostJsonRPC:
         # リクエストを送信
         # {{{
         if self.ID != "" and self.PW != "" :
-            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ) , verify=False )
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ) )
         else:
-            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , verify=False )
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
         # }}}
         # レスポンスの処理
         result = []
@@ -428,9 +401,9 @@ class PostJsonRPC:
         # リクエストを送信
         # {{{
         if self.ID != "" and self.PW != "" :
-            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ) , verify=False )
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ) )
         else:
-            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , verify=False )
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
         # }}}
         # レスポンスの処理
         result = []
@@ -451,6 +424,34 @@ class PostJsonRPC:
     # }}}
 
 
+    # # 記事を送信する。
+    # # {{{
+    # def ThreadPush( self , headers , PAYLOAD ):
+    #     if self.ID != "" and self.PW != "" :
+    #         # print( "ID/PW mode" )
+    #         response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ) , verify=False )
+    #         print(response.status_code)
+    #     else:
+    #         response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , verify=False )
+    #         print(response.status_code)
+
+    #     result = []
+    #     # レスポンスの処理
+    #     if response.status_code == 200:
+    #         try:
+    #             result = response.json()
+    #             # print( "Response:" , result )
+    #         except ValueError:
+    #             print( "Response is not a valid JSON" )
+    #             return
+
+    #     else:
+    #         print( "Request failed with status code:" , response.status_code )
+    #         self.Retemplate( PAYLOAD )
+    #         return
+    #     print( "done : "  + str( result[ 'result' ] ) )
+    #     return
+    # # }}}
 
 
 
