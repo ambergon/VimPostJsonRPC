@@ -37,7 +37,7 @@ class PostJsonRPC:
         "TAGS"      : "TAGS      :"                 ,
         "DATE"      : "yyyy-mm-dd:"                 ,
         "URL"       : "URL       :"                 ,
-        "TITLE"     : "[TITLE] ====================",
+        "TEXT"      : "[TEXT] =====================",
     }
 
     # JSON-RPC
@@ -78,7 +78,7 @@ class PostJsonRPC:
         vim.current.buffer.append( self.TEMPLATE['PERSONS']  )
         vim.current.buffer.append( self.TEMPLATE['TAGS']     )
         vim.current.buffer.append( self.TEMPLATE['URL']      )
-        vim.current.buffer.append( self.TEMPLATE['TITLE']    )
+        vim.current.buffer.append( self.TEMPLATE['TEXT']    )
         del vim.current.buffer[0]
 
 
@@ -96,7 +96,7 @@ class PostJsonRPC:
         DATE        = vim.current.buffer[3].replace( self.TEMPLATE['DATE']     , "" , 1 )
         PERSONS     = vim.current.buffer[4].replace( self.TEMPLATE['PERSONS']  , "" , 1 )
         TAGS        = vim.current.buffer[5].replace( self.TEMPLATE['TAGS']     , "" , 1 )
-        BUFFER      = vim.current.buffer[7:]
+        BUFFER      = vim.current.buffer[8:]
         TEXT        = ""
         for line in BUFFER:
             TEXT = TEXT + line + "\n"
@@ -163,11 +163,11 @@ class PostJsonRPC:
         DATE        = vim.current.buffer[3].replace( self.TEMPLATE['DATE']     , "" , 1 )
         PERSONS     = vim.current.buffer[4].replace( self.TEMPLATE['PERSONS']  , "" , 1 )
         TAGS        = vim.current.buffer[5].replace( self.TEMPLATE['TAGS']     , "" , 1 )
-        BUFFER      = vim.current.buffer[7:]
+        BUFFER      = vim.current.buffer[8:]
         # 検索では改行をスペースで区切って検索してみる。
         TEXT        = ""
         for line in BUFFER:
-            TEXT = TEXT + line + " "
+            TEXT = TEXT + line + ""
 
 
         # PERSONS     = vim.current.buffer[1].replace( self.SEARCH["PERSONS"] , "" , 1 )
@@ -181,14 +181,13 @@ class PostJsonRPC:
         PERSONS         = re.sub( r'^,' , '' , PERSONS )
         tags_array      = TAGS.split( "," )
         persons_array   = PERSONS.split( "," )
-        date_array      = DATE.split( "~" )
 
         PAYLOAD = copy.deepcopy( self.PAYLOAD )
         PAYLOAD[ 'method' ]  = "archiveSearch"
         PAYLOAD[ 'params' ] = {
             "TAGS"      : tags_array    ,   
             "PERSONS"   : persons_array , 
-            "DATES"     : date_array    ,
+            "DATES"     : DATE          ,
             "TEXT"      : TEXT          ,
         }
         headers = {
@@ -218,7 +217,7 @@ class PostJsonRPC:
         # }}}
 
         # print( "Response:" , res)
-        vim.command(':sp '   + self.BufferName + "Results" )
+        vim.command(':abo sp '   + self.BufferName + "Results" )
         vim.command('setl buftype=nowrite' )
         vim.command('setl encoding=utf-8')
         vim.command('setl filetype=markdown' )
@@ -226,8 +225,22 @@ class PostJsonRPC:
         vim.command('map <silent><buffer><enter>   :py3 VimPostJsonRPCInst.GetArchive()<cr>' )
         del vim.current.buffer[:]
         for record in res[ 'result' ]:
-            vim.current.buffer.append( "[" + record[ 'time' ] + "]" + str( record[ 'id' ] )  + ":" + record[ 'title' ] )
-        del vim.current.buffer[0]
+            # print( record )
+            text = "[" + record[ 'time' ] + "]" + str( record[ 'id' ] ) + ":"
+            count = 0
+            print( record[ 'text' ] )
+            for line in record[ 'text' ].splitlines():
+                if count == 0 :
+                    vim.current.buffer.append( text + line )
+                else :
+                    vim.current.buffer.append( line )
+                count = count + 1
+            # for line in record[ 'text' ]:
+            #     text = text + line
+            #     print( text )
+                #     vim.current.buffer.append( line )
+            # vim.current.buffer.append( text )
+        # del vim.current.buffer[0]
 
 
     # }}}
