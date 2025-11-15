@@ -114,7 +114,7 @@ class PostJsonRPC:
     # }}}
     # 記事テンプレートを送信する。
     # {{{
-    def PushArchive( self ):
+    def AddArchive( self ):
         bn = self.BufferName + "Archive"
         x = vim.current.buffer.name
         if x != bn :
@@ -391,7 +391,7 @@ class PostJsonRPC:
 
         PAYLOAD = copy.deepcopy( self.PAYLOAD )
         # 適当に空白を除去する必要がある。
-        PAYLOAD[ 'method' ]  = "deleteArchive"
+        PAYLOAD[ 'method' ]  = "archiveDelete"
         PAYLOAD[ 'params' ]  = {
             "ID"        : id       , 
         }

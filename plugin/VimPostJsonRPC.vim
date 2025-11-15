@@ -22,7 +22,7 @@ endif
 
 " command! -nargs=* Rpc           call VimPostJsonRPC#pycmd('Send(<f-args>)')
 command! -nargs=0 Archive               call VimPostJsonRPC#pycmd('Template(<f-args>)')
-command! -nargs=0 ArchivePush           call VimPostJsonRPC#pycmd('PushArchive(<f-args>)')
+command! -nargs=0 ArchiveAdd            call VimPostJsonRPC#pycmd('AddArchive(<f-args>)')
 command! -nargs=0 ArchiveSearch         call VimPostJsonRPC#pycmd('SearchTemplate()')
 command! -nargs=0 ArchiveSearchPush     call VimPostJsonRPC#pycmd('Search()')
 " command! -nargs=1 RpcSearchTags     call VimPostJsonRPC#pycmd('SearchTags(<q-args>)')
