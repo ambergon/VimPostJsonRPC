@@ -33,18 +33,11 @@ class PostJsonRPC:
         "DONT"      : "[Dont Touch] ===============",
         "ID"        : "ID        :"                 ,
         "META"      : "[Meta] =====================",
-        "TITLE"     : "Title     :"                 ,
         "PERSONS"   : "PERSONS   :"                 ,
-        "TAGS"      : "Tags      :"                 ,
+        "TAGS"      : "TAGS      :"                 ,
         "DATE"      : "yyyy-mm-dd:"                 ,
-        "THOUGHTS"  : "[Thoughts] =================",
-    }
-    SEARCH = {
-        "TITLE"     : "Title     :"                 ,
-        "PERSONS"   : "PERSONS   :"                 ,
-        "TAGS"      : "Tags      :"                 ,
-        "SINCE"     : "yyyy-mm-dd:"                 ,
-        "UNTIL"     : "yyyy-mm-dd:"                 ,
+        "URL"       : "URL       :"                 ,
+        "TITLE"     : "[TITLE] ====================",
     }
 
     # JSON-RPC
@@ -64,7 +57,7 @@ class PostJsonRPC:
     # 記事投稿用のテンプレートを設置する。
     # {{{
     def Template( self ):
-        vim.command( ':e '   + self.BufferName + "Archive" )
+        vim.command( ':e '   + self.BufferName + "Template" )
         # #新しいファイルを開く
         # if( PostID == "" ):
         # else:
@@ -81,52 +74,29 @@ class PostJsonRPC:
         vim.current.buffer.append( self.TEMPLATE['DONT']     )
         vim.current.buffer.append( self.TEMPLATE['ID']       )
         vim.current.buffer.append( self.TEMPLATE['META']     )
-        vim.current.buffer.append( self.TEMPLATE['TITLE']    )
+        vim.current.buffer.append( self.TEMPLATE['DATE']     )
         vim.current.buffer.append( self.TEMPLATE['PERSONS']  )
         vim.current.buffer.append( self.TEMPLATE['TAGS']     )
-        vim.current.buffer.append( self.TEMPLATE['DATE']     )
-        vim.current.buffer.append( self.TEMPLATE['THOUGHTS'] )
+        vim.current.buffer.append( self.TEMPLATE['URL']      )
+        vim.current.buffer.append( self.TEMPLATE['TITLE']    )
         del vim.current.buffer[0]
 
 
     # }}}
-    # 送信が失敗した際に下書きを復旧する。
+    # 記事を送信する。
     # {{{
-    def Retemplate( self , PAYLOAD ):
-        vim.command(':sp '   + self.BufferName + "ReArchive" )
-        vim.command('setl buftype=nowrite' )
-        vim.command("setl encoding=utf-8")
-        vim.command('setl filetype=markdown' )
-        vim.command("setl bufhidden=delete" )
-
-
-        del vim.current.buffer[:]
-        vim.current.buffer.append( self.TEMPLATE['DONT']                                    )
-        vim.current.buffer.append( self.TEMPLATE['ID']       + PAYLOAD[ 'params' ][ 'ID' ]  )
-        vim.current.buffer.append( self.TEMPLATE['META']                                    )
-        vim.current.buffer.append( self.TEMPLATE['TITLE']    + PAYLOAD[ 'params' ][ 'TITLE' ])
-        vim.current.buffer.append( self.TEMPLATE['PERSONS']  + PAYLOAD[ 'params' ][ 'PERSONS' ])
-        vim.current.buffer.append( self.TEMPLATE['TAGS']     + PAYLOAD[ 'params' ][ 'TAGS' ])
-        vim.current.buffer.append( self.TEMPLATE['DATE']     + PAYLOAD[ 'params' ][ 'DATE' ])
-        vim.current.buffer.append( self.TEMPLATE['THOUGHTS']        )
-        vim.current.buffer.append( PAYLOAD[ 'params' ][ 'TEXT' ]    )
-        del vim.current.buffer[0]
-    # }}}
-    # 記事テンプレートを送信する。
-    # {{{
-    def AddArchive( self ):
-        bn = self.BufferName + "Archive"
+    def Add( self ):
+        bn = self.BufferName + "Template"
         x = vim.current.buffer.name
         if x != bn :
             print( "not buffer")
             return
 
         ID          = vim.current.buffer[1].replace( self.TEMPLATE['ID']       , "" , 1 )
-        TITLE       = vim.current.buffer[3].replace( self.TEMPLATE['TITLE']    , "" , 1 )
+        DATE        = vim.current.buffer[3].replace( self.TEMPLATE['DATE']     , "" , 1 )
         PERSONS     = vim.current.buffer[4].replace( self.TEMPLATE['PERSONS']  , "" , 1 )
         TAGS        = vim.current.buffer[5].replace( self.TEMPLATE['TAGS']     , "" , 1 )
-        DATE        = vim.current.buffer[6].replace( self.TEMPLATE['DATE']     , "" , 1 )
-        BUFFER      = vim.current.buffer[8:]
+        BUFFER      = vim.current.buffer[7:]
         TEXT        = ""
         for line in BUFFER:
             TEXT = TEXT + line + "\n"
@@ -136,10 +106,9 @@ class PostJsonRPC:
         PAYLOAD[ 'method' ]  = "archiveAdd"
         PAYLOAD[ 'params' ]  = {
             "ID"        : ID       , 
-            "TITLE"     : TITLE    , 
+            "DATE"      : DATE     , 
             "PERSONS"   : PERSONS  , 
             "TAGS"      : TAGS     , 
-            "DATE"      : DATE     , 
             "TEXT"      : TEXT     , 
         }
 
@@ -174,44 +143,37 @@ class PostJsonRPC:
 
         vim.current.buffer[1] = self.TEMPLATE[ 'ID' ] + str( res[ 'result' ][ 'id' ] )
         if 'date' in res[ 'result' ] :
-            vim.current.buffer[6] = self.TEMPLATE[ 'DATE' ] + str( res[ 'result' ][ 'date' ] )
+            vim.current.buffer[3] = self.TEMPLATE[ 'DATE' ] + str( res[ 'result' ][ 'date' ] )
 
 
-
-    # }}}
-    # 検索用のテンプレートを表示する。
-    # {{{
-    def SearchTemplate( self ):
-        vim.command(':e '   + self.BufferName + "Search" )
-        vim.command('setl buftype=nowrite' )
-        vim.command('setl encoding=utf-8')
-        vim.command('setl filetype=markdown' )
-        vim.command('setl bufhidden=delete' )
-
-        del vim.current.buffer[:]
-        vim.current.buffer.append( self.SEARCH["TITLE"  ]          )
-        vim.current.buffer.append( self.SEARCH["PERSONS"]          )
-        vim.current.buffer.append( self.SEARCH["TAGS"   ]          )
-        vim.current.buffer.append( self.SEARCH["SINCE"  ]          )
-        vim.current.buffer.append( self.SEARCH["UNTIL"  ]          )
-        del vim.current.buffer[0]
 
     # }}}
     # テンプレートを読み込み、検索する。
     # {{{
     def Search( self ):
 
-        bn = self.BufferName + "Search"
+        bn = self.BufferName + "Template"
         x = vim.current.buffer.name
         if x != bn :
             print( "not buffer")
             return
 
-        TITLE       = vim.current.buffer[0].replace( self.SEARCH["TITLE"  ] , "" , 1 )
-        PERSONS     = vim.current.buffer[1].replace( self.SEARCH["PERSONS"] , "" , 1 )
-        TAGS        = vim.current.buffer[2].replace( self.SEARCH["TAGS"   ] , "" , 1 )
-        SINCE       = vim.current.buffer[3].replace( self.SEARCH["SINCE"  ] , "" , 1 )
-        UNTIL       = vim.current.buffer[4].replace( self.SEARCH["UNTIL"  ] , "" , 1 )
+
+        # ID          = vim.current.buffer[1].replace( self.TEMPLATE['ID']       , "" , 1 )
+        DATE        = vim.current.buffer[3].replace( self.TEMPLATE['DATE']     , "" , 1 )
+        PERSONS     = vim.current.buffer[4].replace( self.TEMPLATE['PERSONS']  , "" , 1 )
+        TAGS        = vim.current.buffer[5].replace( self.TEMPLATE['TAGS']     , "" , 1 )
+        BUFFER      = vim.current.buffer[7:]
+        # 検索では改行をスペースで区切って検索してみる。
+        TEXT        = ""
+        for line in BUFFER:
+            TEXT = TEXT + line + " "
+
+
+        # PERSONS     = vim.current.buffer[1].replace( self.SEARCH["PERSONS"] , "" , 1 )
+        # TAGS        = vim.current.buffer[2].replace( self.SEARCH["TAGS"   ] , "" , 1 )
+        # SINCE       = vim.current.buffer[3].replace( self.SEARCH["SINCE"  ] , "" , 1 )
+        # UNTIL       = vim.current.buffer[4].replace( self.SEARCH["UNTIL"  ] , "" , 1 )
 
         TAGS            = re.sub( r',$' , '' , TAGS )
         TAGS            = re.sub( r'^,' , '' , TAGS )
@@ -219,15 +181,15 @@ class PostJsonRPC:
         PERSONS         = re.sub( r'^,' , '' , PERSONS )
         tags_array      = TAGS.split( "," )
         persons_array   = PERSONS.split( "," )
+        date_array      = DATE.split( "~" )
 
         PAYLOAD = copy.deepcopy( self.PAYLOAD )
         PAYLOAD[ 'method' ]  = "archiveSearch"
         PAYLOAD[ 'params' ] = {
-            "TITLE"     : TITLE         ,
             "TAGS"      : tags_array    ,   
             "PERSONS"   : persons_array , 
-            "START"     : SINCE         ,
-            "END"       : UNTIL         ,
+            "DATES"     : date_array    ,
+            "TEXT"      : TEXT          ,
         }
         headers = {
             "Content-Type": "application/json"
@@ -256,7 +218,7 @@ class PostJsonRPC:
         # }}}
 
         # print( "Response:" , res)
-        vim.command(':e '   + self.BufferName + "Results" )
+        vim.command(':sp '   + self.BufferName + "Results" )
         vim.command('setl buftype=nowrite' )
         vim.command('setl encoding=utf-8')
         vim.command('setl filetype=markdown' )
@@ -366,7 +328,7 @@ class PostJsonRPC:
 
         archive = res[ 'result' ]
         # print( archive )
-        vim.command(':e '   + self.BufferName + "Archive" )
+        vim.command(':e '   + self.BufferName + "Template" )
         vim.command('setl buftype=nowrite' )
         vim.command('setl encoding=utf-8')
         vim.command('setl filetype=markdown' )
@@ -379,7 +341,6 @@ class PostJsonRPC:
         vim.current.buffer.append( self.TEMPLATE['PERSONS']  + archive[ 'persons' ] )
         vim.current.buffer.append( self.TEMPLATE['TAGS']     + archive[ 'tags' ] )
         vim.current.buffer.append( self.TEMPLATE['DATE']     + archive[ 'date' ] )
-        vim.current.buffer.append( self.TEMPLATE['THOUGHTS'] )
         # vim.current.buffer.append( archive[ 'think' ] )
         for line in archive[ 'think' ].splitlines():
             vim.current.buffer.append( line )
@@ -453,6 +414,45 @@ class PostJsonRPC:
     #         return
     #     print( "done : "  + str( result[ 'result' ] ) )
     #     return
+    # # }}}
+    # # 送信が失敗した際に下書きを復旧する。
+    # # {{{
+    # def Retemplate( self , PAYLOAD ):
+    #     vim.command(':sp '   + self.BufferName + "ReArchive" )
+    #     vim.command('setl buftype=nowrite' )
+    #     vim.command("setl encoding=utf-8")
+    #     vim.command('setl filetype=markdown' )
+    #     vim.command("setl bufhidden=delete" )
+
+
+    #     del vim.current.buffer[:]
+    #     vim.current.buffer.append( self.TEMPLATE['DONT']                                    )
+    #     vim.current.buffer.append( self.TEMPLATE['ID']       + PAYLOAD[ 'params' ][ 'ID' ]  )
+    #     vim.current.buffer.append( self.TEMPLATE['META']                                    )
+    #     vim.current.buffer.append( self.TEMPLATE['TITLE']    + PAYLOAD[ 'params' ][ 'TITLE' ])
+    #     vim.current.buffer.append( self.TEMPLATE['PERSONS']  + PAYLOAD[ 'params' ][ 'PERSONS' ])
+    #     vim.current.buffer.append( self.TEMPLATE['TAGS']     + PAYLOAD[ 'params' ][ 'TAGS' ])
+    #     vim.current.buffer.append( self.TEMPLATE['DATE']     + PAYLOAD[ 'params' ][ 'DATE' ])
+    #     vim.current.buffer.append( PAYLOAD[ 'params' ][ 'TEXT' ]    )
+    #     del vim.current.buffer[0]
+    # # }}}
+    # # 検索用のテンプレートを表示する。
+    # # {{{
+    # def SearchTemplate( self ):
+    #     vim.command(':e '   + self.BufferName + "Search" )
+    #     vim.command('setl buftype=nowrite' )
+    #     vim.command('setl encoding=utf-8')
+    #     vim.command('setl filetype=markdown' )
+    #     vim.command('setl bufhidden=delete' )
+
+    #     del vim.current.buffer[:]
+    #     vim.current.buffer.append( self.SEARCH["TITLE"  ]          )
+    #     vim.current.buffer.append( self.SEARCH["PERSONS"]          )
+    #     vim.current.buffer.append( self.SEARCH["TAGS"   ]          )
+    #     vim.current.buffer.append( self.SEARCH["SINCE"  ]          )
+    #     vim.current.buffer.append( self.SEARCH["UNTIL"  ]          )
+    #     del vim.current.buffer[0]
+
     # # }}}
 
 
