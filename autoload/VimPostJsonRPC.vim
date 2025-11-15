@@ -158,12 +158,12 @@ class PostJsonRPC:
         else:
             response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
 
-        result = []
+        res = []
         # レスポンスの処理
         if response.status_code == 200:
             try:
-                result = response.json()
-                # print( "Response:" , result )
+                res = response.json()
+                # print( "Response:" , res)
             except ValueError:
                 print( "Response is not a valid JSON" )
                 return
@@ -172,7 +172,9 @@ class PostJsonRPC:
             print( "Request failed with status code:" , response.status_code )
             return
 
-        vim.current.buffer[1] = self.TEMPLATE[ 'ID' ] + str( result[ 'result' ] )
+        vim.current.buffer[1] = self.TEMPLATE[ 'ID' ] + str( res[ 'result' ][ 'id' ] )
+        if 'date' in res[ 'result' ] :
+            vim.current.buffer[6] = self.TEMPLATE[ 'DATE' ] + str( res[ 'result' ][ 'date' ] )
 
 
 
@@ -238,12 +240,12 @@ class PostJsonRPC:
             response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
 
         # レスポンスの処理
-        result = []
+        res = []
         # {{{
         if response.status_code == 200:
             try:
-                result = response.json()
-                # print( "Response:" , result )
+                res = response.json()
+                # print( "Response:" , res)
             except ValueError:
                 print( "Response is not a valid JSON" )
                 return
@@ -253,7 +255,7 @@ class PostJsonRPC:
             return
         # }}}
 
-        # print( "Response:" , result )
+        # print( "Response:" , res)
         vim.command(':e '   + self.BufferName + "Results" )
         vim.command('setl buftype=nowrite' )
         vim.command('setl encoding=utf-8')
@@ -261,7 +263,7 @@ class PostJsonRPC:
         vim.command('setl bufhidden=delete' )
         vim.command('map <silent><buffer><enter>   :py3 VimPostJsonRPCInst.GetArchive()<cr>' )
         del vim.current.buffer[:]
-        for record in result[ 'result' ]:
+        for record in res[ 'result' ]:
             vim.current.buffer.append( "[" + record[ 'time' ] + "]" + str( record[ 'id' ] )  + ":" + record[ 'title' ] )
         del vim.current.buffer[0]
 
@@ -291,12 +293,12 @@ class PostJsonRPC:
             response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
 
         # レスポンスの処理
-        result = []
+        res = []
         # {{{
         if response.status_code == 200:
             try:
-                result = response.json()
-                # print( "Response:" , result )
+                res = response.json()
+                # print( "Response:" , res)
             except ValueError:
                 print( "Response is not a valid JSON" )
                 return
@@ -306,7 +308,7 @@ class PostJsonRPC:
             return
         # }}}
 
-        # print( "Response:" , result )
+        # print( "Response:" , res)
         vim.command(':e '   + self.BufferName + "Results" )
         vim.command('setl buftype=nowrite' )
         vim.command('setl encoding=utf-8')
@@ -314,7 +316,7 @@ class PostJsonRPC:
         vim.command('setl bufhidden=delete' )
         vim.command('map <silent><buffer><enter>   :py3 VimPostJsonRPCInst.GetArchive()<cr>' )
         del vim.current.buffer[:]
-        for record in result[ 'result' ]:
+        for record in res[ 'result' ]:
             vim.current.buffer.append( "[" + record[ 'time' ] + "]" + str( record[ 'id' ] )  + ":" + record[ 'title' ] )
         del vim.current.buffer[0]
 
@@ -348,11 +350,11 @@ class PostJsonRPC:
             response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
         # }}}
         # レスポンスの処理
-        result = []
+        res = []
         # {{{
         if response.status_code == 200:
             try:
-                result = response.json()
+                res = response.json()
             except ValueError:
                 print( "Response is not a valid JSON" )
                 return
@@ -362,7 +364,7 @@ class PostJsonRPC:
             return
         # }}}
 
-        archive = result[ 'result' ]
+        archive = res[ 'result' ]
         # print( archive )
         vim.command(':e '   + self.BufferName + "Archive" )
         vim.command('setl buftype=nowrite' )
@@ -406,12 +408,12 @@ class PostJsonRPC:
             response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
         # }}}
         # レスポンスの処理
-        result = []
+        res = []
         # {{{
         if response.status_code == 200:
             try:
-                result = response.json()
-                print( "Response:" , result[ 'result' ] )
+                res = response.json()
+                print( "Response:" , res[ 'result' ] )
             except ValueError:
                 print( "Response is not a valid JSON" )
                 return
@@ -435,12 +437,12 @@ class PostJsonRPC:
     #         response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , verify=False )
     #         print(response.status_code)
 
-    #     result = []
+    #     res = []
     #     # レスポンスの処理
     #     if response.status_code == 200:
     #         try:
-    #             result = response.json()
-    #             # print( "Response:" , result )
+    #             res = response.json()
+    #             # print( "Response:" , res)
     #         except ValueError:
     #             print( "Response is not a valid JSON" )
     #             return
