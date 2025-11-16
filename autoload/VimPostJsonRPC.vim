@@ -58,10 +58,6 @@ class PostJsonRPC:
     # {{{
     def Template( self ):
         vim.command( ':e '   + self.BufferName + "Template" )
-        # #新しいファイルを開く
-        # if( PostID == "" ):
-        # else:
-        #     vim.command( ':e '   + self.BufferName + str(PostID) )
 
         vim.command('setl buftype=nowrite' )
         vim.command("setl encoding=utf-8")
@@ -78,7 +74,7 @@ class PostJsonRPC:
         vim.current.buffer.append( self.TEMPLATE['PERSONS']  )
         vim.current.buffer.append( self.TEMPLATE['TAGS']     )
         vim.current.buffer.append( self.TEMPLATE['URL']      )
-        vim.current.buffer.append( self.TEMPLATE['TEXT']    )
+        vim.current.buffer.append( self.TEMPLATE['TEXT']     )
         del vim.current.buffer[0]
 
 
@@ -217,33 +213,35 @@ class PostJsonRPC:
         # }}}
 
         # print( "Response:" , res)
-        vim.command(':abo sp '   + self.BufferName + "Results" )
+        # すでに指定のバッファのウィンドウが存在する。
+        win = vim.eval( "bufwinnr('" + self.BufferName + "Results" + "')" )
+        if win == '-1' :
+            vim.command('abo sp '   + self.BufferName + "Results" )
+        else :
+            # 指定のウィンドウに移動
+            vim.command( win + 'wincmd w' )
+
         vim.command('setl buftype=nowrite' )
         vim.command('setl encoding=utf-8')
         vim.command('setl filetype=markdown' )
         vim.command('setl bufhidden=delete' )
-        vim.command('map <silent><buffer><enter>   :py3 VimPostJsonRPCInst.GetArchive()<cr>' )
+        # vim.command('map <silent><buffer><enter>   :py3 VimPostJsonRPCInst.GetArchive()<cr>' )
         del vim.current.buffer[:]
         for record in res[ 'result' ]:
-            # print( record )
-            text = "[" + record[ 'time' ] + "]" + str( record[ 'id' ] ) + ":"
+            text = str( record[ 'id' ] ) + ":" + record[ 'time' ] + ":"
             count = 0
-            print( record[ 'text' ] )
+            # print( record[ 'text' ] )
             for line in record[ 'text' ].splitlines():
                 if count == 0 :
                     vim.current.buffer.append( text + line )
+                    count = 1
                 else :
                     vim.current.buffer.append( line )
-                count = count + 1
-            # for line in record[ 'text' ]:
-            #     text = text + line
-            #     print( text )
-                #     vim.current.buffer.append( line )
-            # vim.current.buffer.append( text )
-        # del vim.current.buffer[0]
+        del vim.current.buffer[0]
 
 
     # }}}
+
     # コマンドラインから記事を検索する。
     # {{{
     def SearchTags( self , args ):
@@ -302,17 +300,12 @@ class PostJsonRPC:
     # 他のコマンドから使用する。
     # 現在のカーソル行のIDの記事を読み込む。 
     # {{{
-    def GetArchive( self ):
-        archive_id = vim.current.line
-        archive_id = re.sub( r'\[.*\]' , "" , archive_id )
-        # archive_id = re.sub( "\[.*\]" , "" , archive_id )
-        archive_id = re.sub( ":.*"    , "" , archive_id )
-
+    def Open( self , id ):
         PAYLOAD = copy.deepcopy( self.PAYLOAD )
         # 適当に空白を除去する必要がある。
         PAYLOAD[ 'method' ]  = "archiveOpen"
         PAYLOAD[ 'params' ]  = {
-            "ID"        : archive_id       , 
+            "ID"        : id , 
         }
         headers = {
             "Content-Type": "application/json"
@@ -340,7 +333,6 @@ class PostJsonRPC:
         # }}}
 
         archive = res[ 'result' ]
-        # print( archive )
         vim.command(':e '   + self.BufferName + "Template" )
         vim.command('setl buftype=nowrite' )
         vim.command('setl encoding=utf-8')
@@ -354,7 +346,6 @@ class PostJsonRPC:
         vim.current.buffer.append( self.TEMPLATE['PERSONS']  + archive[ 'persons' ] )
         vim.current.buffer.append( self.TEMPLATE['TAGS']     + archive[ 'tags' ] )
         vim.current.buffer.append( self.TEMPLATE['DATE']     + archive[ 'date' ] )
-        # vim.current.buffer.append( archive[ 'think' ] )
         for line in archive[ 'think' ].splitlines():
             vim.current.buffer.append( line )
         del vim.current.buffer[0]
