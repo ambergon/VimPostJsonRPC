@@ -285,68 +285,9 @@ class PostJsonRPC:
         )
 
     # }}}
-
-    # コマンドラインから記事を検索する。
-    # {{{
-    def SearchTags( self , args ):
-        if len( args ) == 0 :
-            return
-
-        tags_array = args.split( "," )
-
-        PAYLOAD = copy.deepcopy( self.PAYLOAD )
-        PAYLOAD[ 'method' ]  = "archiveSearchTag"
-        PAYLOAD[ 'params' ] = {
-            "TAGS" : tags_array
-        }
-        headers = {
-            "Content-Type": "application/json"
-        }
-        # リクエストを送信
-        if self.ID != "" and self.PW != "" :
-            # print( "ID/PW mode" )
-            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ) )
-        else:
-            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
-
-        # レスポンスの処理
-        res = []
-        # {{{
-        if response.status_code == 200:
-            try:
-                res = response.json()
-                # print( "Response:" , res)
-            except ValueError:
-                print( "Response is not a valid JSON" )
-                return
-
-        else:
-            print( "Request failed with status code:" , response.status_code )
-            return
-        # }}}
-
-        # print( "Response:" , res)
-        vim.command(':e '   + self.PluginName + "Results" )
-        vim.command('setl buftype=nowrite' )
-        vim.command('setl encoding=utf-8')
-        vim.command('setl filetype=markdown' )
-        vim.command('setl bufhidden=delete' )
-        vim.command('map <silent><buffer><enter>   :py3 VimPostJsonRPCInst.GetArchive()<cr>' )
-        del vim.current.buffer[:]
-        for record in res[ 'result' ]:
-            vim.current.buffer.append( "[" + record[ 'time' ] + "]" + str( record[ 'id' ] )  + ":" + record[ 'title' ] )
-        del vim.current.buffer[0]
-
-
-
-
-    # }}}
-    # 他のコマンドから使用する。
     # 指定したIDの記事を削除する。
     # {{{
-    def DeleteArchive( self , id ):
-
-
+    def Delete( self , id ):
         PAYLOAD = copy.deepcopy( self.PAYLOAD )
         # 適当に空白を除去する必要がある。
         PAYLOAD[ 'method' ]  = "archiveDelete"
@@ -381,7 +322,61 @@ class PostJsonRPC:
 
     # }}}
 
+    # # コマンドラインから記事を検索する。
+    # # {{{
+    # def SearchTags( self , args ):
+    #     if len( args ) == 0 :
+    #         return
 
+    #     tags_array = args.split( "," )
+
+    #     PAYLOAD = copy.deepcopy( self.PAYLOAD )
+    #     PAYLOAD[ 'method' ]  = "archiveSearchTag"
+    #     PAYLOAD[ 'params' ] = {
+    #         "TAGS" : tags_array
+    #     }
+    #     headers = {
+    #         "Content-Type": "application/json"
+    #     }
+    #     # リクエストを送信
+    #     if self.ID != "" and self.PW != "" :
+    #         # print( "ID/PW mode" )
+    #         response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ) )
+    #     else:
+    #         response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
+
+    #     # レスポンスの処理
+    #     res = []
+    #     # {{{
+    #     if response.status_code == 200:
+    #         try:
+    #             res = response.json()
+    #             # print( "Response:" , res)
+    #         except ValueError:
+    #             print( "Response is not a valid JSON" )
+    #             return
+
+    #     else:
+    #         print( "Request failed with status code:" , response.status_code )
+    #         return
+    #     # }}}
+
+    #     # print( "Response:" , res)
+    #     vim.command(':e '   + self.PluginName + "Results" )
+    #     vim.command('setl buftype=nowrite' )
+    #     vim.command('setl encoding=utf-8')
+    #     vim.command('setl filetype=markdown' )
+    #     vim.command('setl bufhidden=delete' )
+    #     vim.command('map <silent><buffer><enter>   :py3 VimPostJsonRPCInst.GetArchive()<cr>' )
+    #     del vim.current.buffer[:]
+    #     for record in res[ 'result' ]:
+    #         vim.current.buffer.append( "[" + record[ 'time' ] + "]" + str( record[ 'id' ] )  + ":" + record[ 'title' ] )
+    #     del vim.current.buffer[0]
+
+
+
+
+    # # }}}
     # # 記事を送信する。
     # # {{{
     # def ThreadPush( self , headers , PAYLOAD ):
