@@ -17,7 +17,7 @@ import threading
 
 
 class PostJsonRPC:
-    BufferName = 'VimPostJsonRPC://'
+    PluginName = 'VimPostJsonRPC://'
     #BlogListNum         = 100
     URL = ""
     ID  = ""
@@ -54,27 +54,39 @@ class PostJsonRPC:
         self.ID  = ID
         self.PW  = PW
     # }}}
-    # 記事投稿用のテンプレートを設置する。
+
+    # vim の バッファを作成時のデフォルト処理をまとめる。
     # {{{
-    def Template( self ):
-        vim.command( ':e '   + self.BufferName + "Template" )
+    def Buffer( self , Name = "Template" , Style = ":e " ):
+        # すでに指定のバッファのウィンドウが存在する。
+        win = vim.eval( "bufwinnr('" + self.PluginName + Name + "')" )
+        if win == '-1' :
+            vim.command( Style + self.PluginName + Name )
+        else :
+            # 指定のウィンドウに移動
+            vim.command( win + 'wincmd w' )
 
         vim.command('setl buftype=nowrite' )
         vim.command("setl encoding=utf-8")
         vim.command('setl filetype=markdown' )
         vim.command("setl bufhidden=delete" )
-        # plugin側にsyntaxを入れてた名残
         # vim.command('setl syntax=blogsyntax')
-
+    # }}}
+    # 記事投稿用のテンプレートを設置する。
+    # {{{
+    def Template( self , ID = "" , DATES = "" , PERSONS = "" , TAGS = "" , URL = "" , TEXT = "" ):
+        self.Buffer()
         del vim.current.buffer[:]
-        vim.current.buffer.append( self.TEMPLATE['DONT']     )
-        vim.current.buffer.append( self.TEMPLATE['ID']       )
-        vim.current.buffer.append( self.TEMPLATE['META']     )
-        vim.current.buffer.append( self.TEMPLATE['DATE']     )
-        vim.current.buffer.append( self.TEMPLATE['PERSONS']  )
-        vim.current.buffer.append( self.TEMPLATE['TAGS']     )
-        vim.current.buffer.append( self.TEMPLATE['URL']      )
-        vim.current.buffer.append( self.TEMPLATE['TEXT']     )
+        vim.current.buffer.append( self.TEMPLATE['DONT']                )
+        vim.current.buffer.append( self.TEMPLATE['ID']       + ID       )
+        vim.current.buffer.append( self.TEMPLATE['META']                )
+        vim.current.buffer.append( self.TEMPLATE['DATE']     + DATES    )
+        vim.current.buffer.append( self.TEMPLATE['PERSONS']  + PERSONS  )
+        vim.current.buffer.append( self.TEMPLATE['TAGS']     + TAGS     )
+        vim.current.buffer.append( self.TEMPLATE['URL']      + URL      )
+        vim.current.buffer.append( self.TEMPLATE['TEXT']                )
+        for line in TEXT.splitlines():
+            vim.current.buffer.append( line )
         del vim.current.buffer[0]
 
 
@@ -82,7 +94,7 @@ class PostJsonRPC:
     # 記事を送信する。
     # {{{
     def Add( self ):
-        bn = self.BufferName + "Template"
+        bn = self.PluginName + "Template"
         x = vim.current.buffer.name
         if x != bn :
             print( "not buffer")
@@ -148,7 +160,7 @@ class PostJsonRPC:
     # {{{
     def Search( self ):
 
-        bn = self.BufferName + "Template"
+        bn = self.PluginName + "Template"
         x = vim.current.buffer.name
         if x != bn :
             print( "not buffer")
@@ -160,16 +172,10 @@ class PostJsonRPC:
         PERSONS     = vim.current.buffer[4].replace( self.TEMPLATE['PERSONS']  , "" , 1 )
         TAGS        = vim.current.buffer[5].replace( self.TEMPLATE['TAGS']     , "" , 1 )
         BUFFER      = vim.current.buffer[8:]
-        # 検索では改行をスペースで区切って検索してみる。
+        # 検索では改行をスペースで区切って検索できるようにしたい。
         TEXT        = ""
         for line in BUFFER:
             TEXT = TEXT + line + ""
-
-
-        # PERSONS     = vim.current.buffer[1].replace( self.SEARCH["PERSONS"] , "" , 1 )
-        # TAGS        = vim.current.buffer[2].replace( self.SEARCH["TAGS"   ] , "" , 1 )
-        # SINCE       = vim.current.buffer[3].replace( self.SEARCH["SINCE"  ] , "" , 1 )
-        # UNTIL       = vim.current.buffer[4].replace( self.SEARCH["UNTIL"  ] , "" , 1 )
 
         TAGS            = re.sub( r',$' , '' , TAGS )
         TAGS            = re.sub( r'^,' , '' , TAGS )
@@ -213,18 +219,8 @@ class PostJsonRPC:
         # }}}
 
         # print( "Response:" , res)
-        # すでに指定のバッファのウィンドウが存在する。
-        win = vim.eval( "bufwinnr('" + self.BufferName + "Results" + "')" )
-        if win == '-1' :
-            vim.command('abo sp '   + self.BufferName + "Results" )
-        else :
-            # 指定のウィンドウに移動
-            vim.command( win + 'wincmd w' )
 
-        vim.command('setl buftype=nowrite' )
-        vim.command('setl encoding=utf-8')
-        vim.command('setl filetype=markdown' )
-        vim.command('setl bufhidden=delete' )
+        self.Buffer( Name="Results" , Style='abo sp ' )
         # vim.command('map <silent><buffer><enter>   :py3 VimPostJsonRPCInst.GetArchive()<cr>' )
         del vim.current.buffer[:]
         for record in res[ 'result' ]:
@@ -239,6 +235,54 @@ class PostJsonRPC:
                     vim.current.buffer.append( line )
         del vim.current.buffer[0]
 
+
+    # }}}
+    # 現在のカーソル行のIDの記事を読み込む。 
+    # {{{
+    def Open( self , id ):
+
+
+
+        PAYLOAD = copy.deepcopy( self.PAYLOAD )
+        # 適当に空白を除去する必要がある。
+        PAYLOAD[ 'method' ]  = "archiveOpen"
+        PAYLOAD[ 'params' ]  = {
+            "ID"        : id , 
+        }
+        headers = {
+            "Content-Type": "application/json"
+        }
+        # リクエストを送信
+        # {{{
+        if self.ID != "" and self.PW != "" :
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ) )
+        else:
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
+        # }}}
+        # レスポンスの処理
+        res = []
+        # {{{
+        if response.status_code == 200:
+            try:
+                res = response.json()
+            except ValueError:
+                print( "Response is not a valid JSON" )
+                return
+
+        else:
+            print( "Request failed with status code:" , response.status_code )
+            return
+        # }}}
+
+        archive = res[ 'result' ]
+        self.Template(
+            ID      = str( archive[ 'id' ] ) ,
+            TEXT    = archive[ 'text' ]      if archive [ 'text' ]     is not None else '' , 
+            URL     = archive[ 'url' ]       if archive [ 'url' ]      is not None else '' , 
+            DATES   = archive[ 'dates' ]     if archive [ 'dates' ]    is not None else '' , 
+            TAGS    = archive[ 'tags' ]      if archive [ 'tags' ]     is not None else '' , 
+            PERSONS = archive[ 'persons' ]   if archive [ 'persons' ]  is not None else '' , 
+        )
 
     # }}}
 
@@ -282,7 +326,7 @@ class PostJsonRPC:
         # }}}
 
         # print( "Response:" , res)
-        vim.command(':e '   + self.BufferName + "Results" )
+        vim.command(':e '   + self.PluginName + "Results" )
         vim.command('setl buftype=nowrite' )
         vim.command('setl encoding=utf-8')
         vim.command('setl filetype=markdown' )
@@ -298,59 +342,6 @@ class PostJsonRPC:
 
     # }}}
     # 他のコマンドから使用する。
-    # 現在のカーソル行のIDの記事を読み込む。 
-    # {{{
-    def Open( self , id ):
-        PAYLOAD = copy.deepcopy( self.PAYLOAD )
-        # 適当に空白を除去する必要がある。
-        PAYLOAD[ 'method' ]  = "archiveOpen"
-        PAYLOAD[ 'params' ]  = {
-            "ID"        : id , 
-        }
-        headers = {
-            "Content-Type": "application/json"
-        }
-        # リクエストを送信
-        # {{{
-        if self.ID != "" and self.PW != "" :
-            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ) )
-        else:
-            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
-        # }}}
-        # レスポンスの処理
-        res = []
-        # {{{
-        if response.status_code == 200:
-            try:
-                res = response.json()
-            except ValueError:
-                print( "Response is not a valid JSON" )
-                return
-
-        else:
-            print( "Request failed with status code:" , response.status_code )
-            return
-        # }}}
-
-        archive = res[ 'result' ]
-        vim.command(':e '   + self.BufferName + "Template" )
-        vim.command('setl buftype=nowrite' )
-        vim.command('setl encoding=utf-8')
-        vim.command('setl filetype=markdown' )
-        vim.command('setl bufhidden=delete' )
-        del vim.current.buffer[:]
-        vim.current.buffer.append( self.TEMPLATE['DONT']     )
-        vim.current.buffer.append( self.TEMPLATE['ID']       + archive[ 'id' ] )
-        vim.current.buffer.append( self.TEMPLATE['META']     )
-        vim.current.buffer.append( self.TEMPLATE['TITLE']    + archive[ 'title' ] )
-        vim.current.buffer.append( self.TEMPLATE['PERSONS']  + archive[ 'persons' ] )
-        vim.current.buffer.append( self.TEMPLATE['TAGS']     + archive[ 'tags' ] )
-        vim.current.buffer.append( self.TEMPLATE['DATE']     + archive[ 'date' ] )
-        for line in archive[ 'think' ].splitlines():
-            vim.current.buffer.append( line )
-        del vim.current.buffer[0]
-
-    # }}}
     # 指定したIDの記事を削除する。
     # {{{
     def DeleteArchive( self , id ):
@@ -418,45 +409,6 @@ class PostJsonRPC:
     #         return
     #     print( "done : "  + str( result[ 'result' ] ) )
     #     return
-    # # }}}
-    # # 送信が失敗した際に下書きを復旧する。
-    # # {{{
-    # def Retemplate( self , PAYLOAD ):
-    #     vim.command(':sp '   + self.BufferName + "ReArchive" )
-    #     vim.command('setl buftype=nowrite' )
-    #     vim.command("setl encoding=utf-8")
-    #     vim.command('setl filetype=markdown' )
-    #     vim.command("setl bufhidden=delete" )
-
-
-    #     del vim.current.buffer[:]
-    #     vim.current.buffer.append( self.TEMPLATE['DONT']                                    )
-    #     vim.current.buffer.append( self.TEMPLATE['ID']       + PAYLOAD[ 'params' ][ 'ID' ]  )
-    #     vim.current.buffer.append( self.TEMPLATE['META']                                    )
-    #     vim.current.buffer.append( self.TEMPLATE['TITLE']    + PAYLOAD[ 'params' ][ 'TITLE' ])
-    #     vim.current.buffer.append( self.TEMPLATE['PERSONS']  + PAYLOAD[ 'params' ][ 'PERSONS' ])
-    #     vim.current.buffer.append( self.TEMPLATE['TAGS']     + PAYLOAD[ 'params' ][ 'TAGS' ])
-    #     vim.current.buffer.append( self.TEMPLATE['DATE']     + PAYLOAD[ 'params' ][ 'DATE' ])
-    #     vim.current.buffer.append( PAYLOAD[ 'params' ][ 'TEXT' ]    )
-    #     del vim.current.buffer[0]
-    # # }}}
-    # # 検索用のテンプレートを表示する。
-    # # {{{
-    # def SearchTemplate( self ):
-    #     vim.command(':e '   + self.BufferName + "Search" )
-    #     vim.command('setl buftype=nowrite' )
-    #     vim.command('setl encoding=utf-8')
-    #     vim.command('setl filetype=markdown' )
-    #     vim.command('setl bufhidden=delete' )
-
-    #     del vim.current.buffer[:]
-    #     vim.current.buffer.append( self.SEARCH["TITLE"  ]          )
-    #     vim.current.buffer.append( self.SEARCH["PERSONS"]          )
-    #     vim.current.buffer.append( self.SEARCH["TAGS"   ]          )
-    #     vim.current.buffer.append( self.SEARCH["SINCE"  ]          )
-    #     vim.current.buffer.append( self.SEARCH["UNTIL"  ]          )
-    #     del vim.current.buffer[0]
-
     # # }}}
 
 

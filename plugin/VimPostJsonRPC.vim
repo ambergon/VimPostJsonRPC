@@ -21,8 +21,8 @@ endif
 
 
 " command! -nargs=* Rpc           call VimPostJsonRPC#pycmd('Send(<f-args>)')
-command! -nargs=0 Archive               call VimPostJsonRPC#pycmd('Template(<f-args>)')
-command! -nargs=0 ArchiveAdd            call VimPostJsonRPC#pycmd('Add(<f-args>)')
+command! -nargs=0 Archive               call VimPostJsonRPC#pycmd('Template()')
+command! -nargs=0 ArchiveAdd            call VimPostJsonRPC#pycmd('Add()')
 command! -nargs=0 ArchiveSearch         call VimPostJsonRPC#pycmd('Search()')
 command! -nargs=1 ArchiveOpen           call VimPostJsonRPC#pycmd('Open(<args>)')
 command! -nargs=1 ArchiveRemove         call VimPostJsonRPC#pycmd('DeleteArchive(<args>)')
