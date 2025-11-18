@@ -160,6 +160,7 @@ class PostJsonRPC:
     # {{{
     def Search( self ):
 
+        # 現在のバッファーがTemplateじゃなければ終了。
         bn = self.PluginName + "Template"
         x = vim.current.buffer.name
         if x != bn :
@@ -321,6 +322,59 @@ class PostJsonRPC:
         # }}}
 
     # }}}
+
+    # check用のurl_listを表示する。
+    def Url( self ):
+        PAYLOAD[ 'method' ]  = "archiveUrl"
+        PAYLOAD[ 'params' ] = {
+            # "TAGS"      : tags_array    ,   
+        }
+        headers = {
+            "Content-Type": "application/json"
+        }
+        # リクエストを送信
+        if self.ID != "" and self.PW != "" :
+            # print( "ID/PW mode" )
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ) )
+        else:
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
+
+        # レスポンスの処理
+        res = []
+        # {{{
+        if response.status_code == 200:
+            try:
+                res = response.json()
+                # print( "Response:" , res)
+            except ValueError:
+                print( "Response is not a valid JSON" )
+                return
+
+        else:
+            print( "Request failed with status code:" , response.status_code )
+            return
+        # }}}
+
+        self.Buffer( Name="Check" )
+        # vim.command('map <silent><buffer><enter>   :py3 VimPostJsonRPCInst.GetArchive()<cr>' )
+        del vim.current.buffer[:]
+        for record in res[ 'result' ]:
+            vim.current.buffer.append( str( record[ 'id' ] ) + ":" + record[ 'stamp' ] + ":" + record[ 'title' ] + ":" + record[ 'url' ] )
+        del vim.current.buffer[0]
+
+    def UrlAdd( self , TITLE="" , URL="" ):
+        if TITLE == "" or URL == "" :
+            print( "set 2 args" )
+            return
+        print( TITLE + ":" + URL )
+
+    def UrlRemove( self , ID ):
+        print( ID )
+
+
+
+
+
 
     # # コマンドラインから記事を検索する。
     # # {{{
