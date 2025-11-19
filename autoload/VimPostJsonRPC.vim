@@ -54,7 +54,6 @@ class PostJsonRPC:
         self.ID  = ID
         self.PW  = PW
     # }}}
-
     # vim の バッファを作成時のデフォルト処理をまとめる。
     # {{{
     def Buffer( self , Name = "Template" , Style = ":e " ):
@@ -71,6 +70,8 @@ class PostJsonRPC:
         vim.command('setl filetype=markdown' )
         vim.command("setl bufhidden=delete" )
         # vim.command('setl syntax=blogsyntax')
+
+
     # }}}
     # 記事投稿用のテンプレートを設置する。
     # {{{
@@ -140,7 +141,6 @@ class PostJsonRPC:
         if response.status_code == 200:
             try:
                 res = response.json()
-                # print( "Response:" , res)
             except ValueError:
                 print( "Response is not a valid JSON" )
                 return
@@ -209,7 +209,6 @@ class PostJsonRPC:
         if response.status_code == 200:
             try:
                 res = response.json()
-                # print( "Response:" , res)
             except ValueError:
                 print( "Response is not a valid JSON" )
                 return
@@ -238,12 +237,9 @@ class PostJsonRPC:
 
 
     # }}}
-    # 現在のカーソル行のIDの記事を読み込む。 
+    # 指定したIDの記事を表示する。
     # {{{
     def Open( self , id ):
-
-
-
         PAYLOAD = copy.deepcopy( self.PAYLOAD )
         # 適当に空白を除去する必要がある。
         PAYLOAD[ 'method' ]  = "archiveOpen"
@@ -311,7 +307,6 @@ class PostJsonRPC:
         if response.status_code == 200:
             try:
                 res = response.json()
-                print( "Response:" , res[ 'result' ] )
             except ValueError:
                 print( "Response is not a valid JSON" )
                 return
@@ -320,11 +315,14 @@ class PostJsonRPC:
             print( "Request failed with status code:" , response.status_code )
             return
         # }}}
+        print( "Response:" , res[ 'result' ] )
+
 
     # }}}
-
     # check用のurl_listを表示する。
+    # {{{
     def Url( self ):
+        PAYLOAD = copy.deepcopy( self.PAYLOAD )
         PAYLOAD[ 'method' ]  = "archiveUrl"
         PAYLOAD[ 'params' ] = {
             # "TAGS"      : tags_array    ,   
@@ -345,7 +343,6 @@ class PostJsonRPC:
         if response.status_code == 200:
             try:
                 res = response.json()
-                # print( "Response:" , res)
             except ValueError:
                 print( "Response is not a valid JSON" )
                 return
@@ -358,21 +355,103 @@ class PostJsonRPC:
         self.Buffer( Name="Check" )
         # vim.command('map <silent><buffer><enter>   :py3 VimPostJsonRPCInst.GetArchive()<cr>' )
         del vim.current.buffer[:]
+        # タイトル要素の最大値を取得する。
+        max_title = 0
         for record in res[ 'result' ]:
-            vim.current.buffer.append( str( record[ 'id' ] ) + ":" + record[ 'stamp' ] + ":" + record[ 'title' ] + ":" + record[ 'url' ] )
+            n = len( record[ 'title' ] )
+            if max_title < n :
+                max_title = n
+        # vim.current.buffer.append( str( max_title ) )
+
+        for record in res[ 'result' ]:
+            # id桁を4桁にする。
+            while len( record[ 'id' ] ) < 4:
+                record[ 'id' ] = "0" + record[ 'id' ]
+            vim.current.buffer.append( record[ 'id' ] + "|" + record[ 'stamp' ] + " | " + record[ 'title' ] + "|" + record[ 'url' ] )
         del vim.current.buffer[0]
 
+
+    # }}}
+    # urlを追加する。
+    # {{{
     def UrlAdd( self , TITLE="" , URL="" ):
         if TITLE == "" or URL == "" :
             print( "set 2 args" )
             return
-        print( TITLE + ":" + URL )
+        PAYLOAD = copy.deepcopy( self.PAYLOAD )
+        PAYLOAD[ 'method' ]  = "archiveUrlAdd"
+        PAYLOAD[ 'params' ] = {
+            "TITLE" : TITLE ,   
+            "URL"   : URL   ,   
+        }
+        headers = {
+            "Content-Type": "application/json"
+        }
+        # リクエストを送信
+        if self.ID != "" and self.PW != "" :
+            # print( "ID/PW mode" )
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ) )
+        else:
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
 
-    def UrlRemove( self , ID ):
-        print( ID )
+        # レスポンスの処理
+        res = []
+        # {{{
+        if response.status_code == 200:
+            try:
+                res = response.json()
+            except ValueError:
+                print( "Response is not a valid JSON" )
+                return
+
+        else:
+            print( "Request failed with status code:" , response.status_code )
+            return
+        # }}}
+        print( "Response:" , res[ 'result' ] )
+
+
+    # }}}
+    # urlを削除する。
+    # {{{
+    def UrlRemove( self , ID=""):
+        if ID == "" :
+            print( "set ID = num " )
+            return
+        PAYLOAD = copy.deepcopy( self.PAYLOAD )
+        PAYLOAD[ 'method' ]  = "archiveUrlRemove"
+        PAYLOAD[ 'params' ] = {
+            "ID" : ID ,   
+        }
+        headers = {
+            "Content-Type": "application/json"
+        }
+        # リクエストを送信
+        if self.ID != "" and self.PW != "" :
+            # print( "ID/PW mode" )
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ) )
+        else:
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
+
+        # レスポンスの処理
+        res = []
+        # {{{
+        if response.status_code == 200:
+            try:
+                res = response.json()
+            except ValueError:
+                print( "Response is not a valid JSON" )
+                return
+
+        else:
+            print( "Request failed with status code:" , response.status_code )
+            return
+        # }}}
+        print( "Response:" , res[ 'result' ] )
 
 
 
+    # }}}
 
 
 

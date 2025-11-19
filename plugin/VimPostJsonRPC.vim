@@ -22,10 +22,16 @@ endif
 
 " command! -nargs=* Rpc           call VimPostJsonRPC#pycmd('Send(<f-args>)')
 command! -nargs=0 Archive               call VimPostJsonRPC#pycmd('Template()')
-command! -nargs=0 ArchiveAdd            call VimPostJsonRPC#pycmd('Add()')
-command! -nargs=0 ArchiveSearch         call VimPostJsonRPC#pycmd('Search()')
-command! -nargs=1 ArchiveOpen           call VimPostJsonRPC#pycmd('Open(<args>)')
-command! -nargs=1 ArchiveRemove         call VimPostJsonRPC#pycmd('Delete(<args>)')
+augroup VimPostJsonRPC
+  autocmd!
+  autocmd BufEnter VimPostJsonRPC://Template command! -buffer -nargs=0 ArchiveAdd            call VimPostJsonRPC#pycmd('Add()')
+  autocmd BufEnter VimPostJsonRPC://Template command! -buffer -nargs=0 ArchiveSearch         call VimPostJsonRPC#pycmd('Search()')
+  autocmd BufEnter VimPostJsonRPC://Template command! -buffer -nargs=1 ArchiveOpen           call VimPostJsonRPC#pycmd('Open(<args>)')
+  autocmd BufEnter VimPostJsonRPC://Template command! -buffer -nargs=1 ArchiveRemove         call VimPostJsonRPC#pycmd('Delete(<args>)')
+augroup END
+
+
+
 
 " 特定のbufferでだけ読み込めると楽なんだけど。
 command! -nargs=0 CheckUrl            call VimPostJsonRPC#pycmd('Url()')
