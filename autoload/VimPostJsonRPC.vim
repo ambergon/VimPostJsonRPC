@@ -105,6 +105,7 @@ class PostJsonRPC:
         DATE        = vim.current.buffer[3].replace( self.TEMPLATE['DATE']     , "" , 1 )
         PERSONS     = vim.current.buffer[4].replace( self.TEMPLATE['PERSONS']  , "" , 1 )
         TAGS        = vim.current.buffer[5].replace( self.TEMPLATE['TAGS']     , "" , 1 )
+        URL         = vim.current.buffer[6].replace( self.TEMPLATE['URL']     , "" , 1 )
         BUFFER      = vim.current.buffer[8:]
         TEXT        = ""
         for line in BUFFER:
@@ -119,6 +120,7 @@ class PostJsonRPC:
             "PERSONS"   : PERSONS  , 
             "TAGS"      : TAGS     , 
             "TEXT"      : TEXT     , 
+            "URL"       : URL      , 
         }
 
         # print( PAYLOAD ) 
@@ -352,7 +354,7 @@ class PostJsonRPC:
             return
         # }}}
 
-        self.Buffer( Name="Check" )
+        self.Buffer( Name="Check" , Style=":sp " )
         # vim.command('map <silent><buffer><enter>   :py3 VimPostJsonRPCInst.GetArchive()<cr>' )
         del vim.current.buffer[:]
         # タイトル要素の最大値を取得する。
@@ -367,17 +369,24 @@ class PostJsonRPC:
             # id桁を4桁にする。
             while len( record[ 'id' ] ) < 4:
                 record[ 'id' ] = "0" + record[ 'id' ]
-            vim.current.buffer.append( record[ 'id' ] + "|" + record[ 'stamp' ] + " | " + record[ 'title' ] + "|" + record[ 'url' ] )
+            vim.current.buffer.append( record[ 'id' ] + " | " + record[ 'stamp' ] + " | " + record[ 'title' ] + " | " + record[ 'url' ] )
         del vim.current.buffer[0]
 
 
     # }}}
     # urlを追加する。
     # {{{
-    def UrlAdd( self , TITLE="" , URL="" ):
-        if TITLE == "" or URL == "" :
-            print( "set 2 args" )
+    def UrlAdd( self ):
+        # 専用のバッファのみで稼働する。 使いまわす。
+        bn = self.PluginName + "Template"
+        x = vim.current.buffer.name
+        if x != bn :
+            print( "not buffer")
             return
+
+        URL         = vim.current.buffer[6].replace( self.TEMPLATE['URL']     , "" , 1 )
+        TITLE       = vim.current.buffer[8]
+
         PAYLOAD = copy.deepcopy( self.PAYLOAD )
         PAYLOAD[ 'method' ]  = "archiveUrlAdd"
         PAYLOAD[ 'params' ] = {
