@@ -226,7 +226,64 @@ class PostJsonRPC:
         # vim.command('map <silent><buffer><enter>   :py3 VimPostJsonRPCInst.GetArchive()<cr>' )
         del vim.current.buffer[:]
         for record in res[ 'result' ]:
-            text = str( record[ 'id' ] ) + ":" + record[ 'time' ] + ":"
+            text = str( record[ 'id' ] ) + " : " + record[ 'time' ] + " : "
+            count = 0
+            # print( record[ 'text' ] )
+            for line in record[ 'text' ].splitlines():
+                if count == 0 :
+                    vim.current.buffer.append( text + line )
+                    count = 1
+                else :
+                    vim.current.buffer.append( line )
+        del vim.current.buffer[0]
+
+
+    # }}}
+    # 無条件ですべての記事を表示
+    # {{{
+    def SearchAll( self ):
+
+        # 現在のバッファーがTemplateじゃなければ終了。
+        bn = self.PluginName + "Template"
+        x = vim.current.buffer.name
+        if x != bn :
+            print( "not buffer")
+            return
+
+        PAYLOAD = copy.deepcopy( self.PAYLOAD )
+        PAYLOAD[ 'method' ]  = "archiveSearchAll"
+        PAYLOAD[ 'params' ] = {
+        }
+        headers = {
+            "Content-Type": "application/json"
+        }
+        # リクエストを送信
+        if self.ID != "" and self.PW != "" :
+            # print( "ID/PW mode" )
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ) )
+        else:
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
+
+        # レスポンスの処理
+        res = []
+        # {{{
+        if response.status_code == 200:
+            try:
+                res = response.json()
+            except ValueError:
+                print( "Response is not a valid JSON" )
+                return
+
+        else:
+            print( "Request failed with status code:" , response.status_code )
+            return
+        # }}}
+
+        # print( "Response:" , res)
+        self.Buffer( Name="Results" , Style='abo sp ' )
+        del vim.current.buffer[:]
+        for record in res[ 'result' ]:
+            text = str( record[ 'id' ] ) + " : " + record[ 'time' ] + " : "
             count = 0
             # print( record[ 'text' ] )
             for line in record[ 'text' ].splitlines():
