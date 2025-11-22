@@ -368,7 +368,7 @@ class PostJsonRPC:
         for record in res[ 'result' ]:
             # id桁を4桁にする。
             while len( record[ 'id' ] ) < 4:
-                record[ 'id' ] = "0" + record[ 'id' ]
+                record[ 'id' ] = " " + record[ 'id' ]
             vim.current.buffer.append( record[ 'id' ] + " | " + record[ 'stamp' ] + " | " + record[ 'title' ] + " | " + record[ 'url' ] )
         del vim.current.buffer[0]
 
@@ -461,8 +461,47 @@ class PostJsonRPC:
 
 
     # }}}
+    # 現在の行で更新をかける。date欄が空行ならば現在時刻、指定があればそれで更新する。
+    # {{{
+    def UrlUpdate( self ):
+        b = vim.current.line
+        a = b.split( "|" )
+        if len( a ) <= 1:
+            return
 
+        PAYLOAD = copy.deepcopy( self.PAYLOAD )
+        PAYLOAD[ 'method' ]  = "archiveUrlUpdate"
+        PAYLOAD[ 'params' ] = {
+            "ID" : a[0] ,   
+            "DATE" : a[1] ,   
+        }
+        headers = {
+            "Content-Type": "application/json"
+        }
+        # リクエストを送信
+        if self.ID != "" and self.PW != "" :
+            # print( "ID/PW mode" )
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ) )
+        else:
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
 
+        # レスポンスの処理
+        res = []
+        # {{{
+        if response.status_code == 200:
+            try:
+                res = response.json()
+            except ValueError:
+                print( "Response is not a valid JSON" )
+                return
+
+        else:
+            print( "Request failed with status code:" , response.status_code )
+            return
+        # }}}
+        print( "Response:" , res[ 'result' ] )
+
+        # }}}
 
     # # コマンドラインから記事を検索する。
     # # {{{
