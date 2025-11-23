@@ -180,24 +180,30 @@ class PostJsonRPC:
         for line in BUFFER:
             TEXT = TEXT + line + ""
 
-        TAGS            = re.sub( r',$' , '' , TAGS )
-        TAGS            = re.sub( r'^,' , '' , TAGS )
-        PERSONS         = re.sub( r',$' , '' , PERSONS )
-        PERSONS         = re.sub( r'^,' , '' , PERSONS )
-        tags_array      = TAGS.split( "," )
-        persons_array   = PERSONS.split( "," )
-
         PAYLOAD = copy.deepcopy( self.PAYLOAD )
-        PAYLOAD[ 'method' ]  = "archiveSearch"
-        PAYLOAD[ 'params' ] = {
-            "TAGS"      : tags_array    ,   
-            "PERSONS"   : persons_array , 
-            "DATES"     : DATE          ,
-            "TEXT"      : TEXT          ,
-        }
+        if DATE    == "" and PERSONS == "" and TAGS    == "" and TEXT    == "" :
+            PAYLOAD[ 'method' ]  = "archiveSearchAll"
+            PAYLOAD[ 'params' ] = {}
+        else :
+            TAGS            = re.sub( r',$' , '' , TAGS )
+            TAGS            = re.sub( r'^,' , '' , TAGS )
+            PERSONS         = re.sub( r',$' , '' , PERSONS )
+            PERSONS         = re.sub( r'^,' , '' , PERSONS )
+            tags_array      = TAGS.split( "," )
+            persons_array   = PERSONS.split( "," )
+
+            PAYLOAD[ 'method' ]  = "archiveSearch"
+            PAYLOAD[ 'params' ] = {
+                "TAGS"      : tags_array    ,   
+                "PERSONS"   : persons_array , 
+                "DATES"     : DATE          ,
+                "TEXT"      : TEXT          ,
+            }
+
         headers = {
             "Content-Type": "application/json"
         }
+
         # リクエストを送信
         if self.ID != "" and self.PW != "" :
             # print( "ID/PW mode" )
@@ -243,20 +249,6 @@ class PostJsonRPC:
     # {{{
     def SearchAll( self ):
 
-        # 現在のバッファーがTemplateじゃなければ終了。
-        bn = self.PluginName + "Template"
-        x = vim.current.buffer.name
-        if x != bn :
-            print( "not buffer")
-            return
-
-        PAYLOAD = copy.deepcopy( self.PAYLOAD )
-        PAYLOAD[ 'method' ]  = "archiveSearchAll"
-        PAYLOAD[ 'params' ] = {
-        }
-        headers = {
-            "Content-Type": "application/json"
-        }
         # リクエストを送信
         if self.ID != "" and self.PW != "" :
             # print( "ID/PW mode" )

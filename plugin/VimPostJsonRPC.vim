@@ -26,7 +26,6 @@ augroup VimPostJsonRPC
     autocmd!
     autocmd BufEnter VimPostJsonRPC://Template command! -buffer -nargs=0 ArchiveAdd           call VimPostJsonRPC#pycmd('Add()')
     autocmd BufEnter VimPostJsonRPC://Template command! -buffer -nargs=0 ArchiveSearch        call VimPostJsonRPC#pycmd('Search()')
-    autocmd BufEnter VimPostJsonRPC://Template command! -buffer -nargs=0 ArchiveSearchAll     call VimPostJsonRPC#pycmd('SearchAll()')
     autocmd BufEnter VimPostJsonRPC://Template command! -buffer -nargs=1 ArchiveRemove        call VimPostJsonRPC#pycmd('Delete(<args>)')
     autocmd BufEnter VimPostJsonRPC://Template command! -buffer -nargs=0 ArchiveUrl           call VimPostJsonRPC#pycmd('Url()')
     autocmd BufEnter VimPostJsonRPC://Template command! -buffer -nargs=0 ArchiveUrlAdd        call VimPostJsonRPC#pycmd('UrlAdd(<f-args>)')
