@@ -65,9 +65,10 @@ class PostJsonRPC:
             # 指定のウィンドウに移動
             vim.command( win + 'wincmd w' )
 
-        vim.command('setl buftype=nowrite' )
         vim.command("setl encoding=utf-8")
         vim.command('setl filetype=markdown' )
+        vim.command('setl nobuflisted' )
+        vim.command('setl buftype=nofile' )
         vim.command("setl bufhidden=delete" )
         vim.command("setl noswapfile")
         # vim.command('setl syntax=blogsyntax')
