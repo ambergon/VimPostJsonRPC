@@ -69,6 +69,7 @@ class PostJsonRPC:
         vim.command("setl encoding=utf-8")
         vim.command('setl filetype=markdown' )
         vim.command("setl bufhidden=delete" )
+        vim.command("setl noswapfile")
         # vim.command('setl syntax=blogsyntax')
 
 
