@@ -91,6 +91,7 @@ class PostJsonRPC:
         for line in TEXT.splitlines():
             vim.current.buffer.append( line )
         del vim.current.buffer[0]
+        print( self.URL )
 
 
     # }}}
