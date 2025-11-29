@@ -35,7 +35,6 @@ augroup VimPostJsonRPC
 augroup END
 
 
-command! -nargs=0 Do call VimPostJsonRPC#pycmd('AutoComplete()')
 
 
 
