@@ -300,7 +300,10 @@ class PostJsonRPC:
         # vim.command('map <silent><buffer><enter>   :py3 VimPostJsonRPCInst.GetArchive()<cr>' )
         del vim.current.buffer[:]
         for record in res[ 'result' ]:
-            text = str( record[ 'id' ] ) + " : " + record[ 'time' ] + " : "
+            # id桁を4桁にする。
+            while len( record[ 'id' ] ) < 4:
+                record[ 'id' ] = " " + record[ 'id' ]
+            text = str( record[ 'id' ] ) + " | " + record[ 'time' ] + " | "
             count = 0
             # print( record[ 'text' ] )
             for line in record[ 'text' ].splitlines():
@@ -343,7 +346,10 @@ class PostJsonRPC:
         self.Buffer( Name="Results" , Style='abo sp ' )
         del vim.current.buffer[:]
         for record in res[ 'result' ]:
-            text = str( record[ 'id' ] ) + " : " + record[ 'time' ] + " : "
+            # id桁を4桁にする。
+            while len( record[ 'id' ] ) < 4:
+                record[ 'id' ] = " " + record[ 'id' ]
+            text = str( record[ 'id' ] ) + " | " + record[ 'time' ] + " | "
             count = 0
             # print( record[ 'text' ] )
             for line in record[ 'text' ].splitlines():
