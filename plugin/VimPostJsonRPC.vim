@@ -35,11 +35,7 @@ augroup VimPostJsonRPC
 augroup END
 
 
-
-" 特定のbufferでだけ読み込めると楽なんだけど。
-" command! -nargs=+ CheckUrlAdd         call VimPostJsonRPC#pycmd('UrlAdd(<f-args>)')
-" command! -nargs=0 ArchiveSearch         call VimPostJsonRPC#pycmd('SearchTemplate()')
-" command! -nargs=1 RpcSearchTags     call VimPostJsonRPC#pycmd('SearchTags(<q-args>)')
+command! -nargs=0 Do call VimPostJsonRPC#pycmd('AutoComplete()')
 
 
 

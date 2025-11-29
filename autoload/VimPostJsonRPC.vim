@@ -71,10 +71,75 @@ class PostJsonRPC:
         vim.command('setl buftype=nofile' )
         vim.command("setl bufhidden=delete" )
         vim.command("setl noswapfile")
+        # バッファリストにないバッファも補完検索対象とする。
+        vim.command("setl complete+=U")
         # vim.command('setl syntax=blogsyntax')
+
+        # バッファが存在しなければ補完バッファを作る。
+        flag = 0
+        for b in vim.buffers:
+            bn = self.PluginName + "AutoComplete"
+            if b.name == bn :
+                flag = 1
+        if flag == 0 :
+            self.AutoComplete()
 
 
     # }}}
+    # 補完に必要な名前を一覧で取得し、隠れたバッファに格納する。
+    # {{{
+    def AutoComplete( self ):
+
+        PAYLOAD = copy.deepcopy( self.PAYLOAD )
+        # 適当に空白を除去する必要がある。
+        PAYLOAD[ 'method' ]  = "archiveNames"
+        PAYLOAD[ 'params' ]  = {
+        }
+        headers = {
+            "Content-Type": "application/json"
+        }
+        if self.ID != "" and self.PW != "" :
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ) )
+        else:
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
+
+        res = []
+        # レスポンスの処理
+        if response.status_code == 200:
+            try:
+                res = response.json()
+            except ValueError:
+                print( "Response is not a valid JSON" )
+                return
+        else:
+            print( "Request failed with status code:" , response.status_code )
+            return
+
+        vim.command( 'let buf = bufadd( "' + self.PluginName + "AutoComplete" + '" )' )
+        vim.command( 'call bufload( buf )   ' )
+        # vim.command( 'call appendbufline( buf , 0 , "test" )' )
+        # {{{
+        # # scratch buffer 
+        # # 保存しない
+        # vim.command( '# :setlocal buftype=nofile' )
+        # # バッファを隠す。
+        # vim.command( '# :setlocal bufhidden=hide' )
+        # # bnextで移動しない。
+        # vim.command( '# :setlocal nobuflisted' )
+        # # バックアップを取らない。
+        # vim.command( '# :setlocal noswapfile' )
+        # }}}
+        vim.command( 'call setbufvar( buf , "&buftype"   , "nofile" ) ')
+        vim.command( 'call setbufvar( buf , "&bufhidden" , "hide" ) ')
+        vim.command( 'call setbufvar( buf , "&buflisted" , "0" ) ')
+        vim.command( 'call setbufvar( buf , "&swapfile"  , "0" ) ')
+
+        # print( "Response:" , res[ 'result' ] )
+        for record in res[ 'result' ]:
+            # print( record[ 'name' ] )
+            vim.command( 'call appendbufline( buf , 0 , "' + record[ 'name' ] + '" )' )
+
+# }}}
     # 記事投稿用のテンプレートを設置する。
     # {{{
     def Template( self , ID = "" , DATES = "" , PERSONS = "" , TAGS = "" , URL = "" , TEXT = "" ):
@@ -91,7 +156,7 @@ class PostJsonRPC:
         for line in TEXT.splitlines():
             vim.current.buffer.append( line )
         del vim.current.buffer[0]
-        print( self.URL )
+        # print( self.URL )
 
 
     # }}}
