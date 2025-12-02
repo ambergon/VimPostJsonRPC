@@ -148,7 +148,7 @@ class PostJsonRPC:
             # print( record[ 'name' ] )
             vim.command( 'call appendbufline( buf , 0 , "' + record[ 'name' ] + '" )' )
 
-# }}}
+    # }}}
     # 記事投稿用のテンプレートを設置する。
     # {{{
     def Template( self , ID = "" , DATES = "" , PERSONS = "" , TAGS = "" , URL = "" , TEXT = "" ):
@@ -642,6 +642,42 @@ class PostJsonRPC:
         PAYLOAD[ 'params' ]  = {
             "ID"        : id , 
             "PARENT_ID" : parent_id, 
+        }
+        headers = {
+            "Content-Type": "application/json"
+        }
+        # リクエストを送信
+        # {{{
+        if self.ID != "" and self.PW != "" :
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ) )
+        else:
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
+        # }}}
+        # レスポンスの処理
+        res = []
+        # {{{
+        if response.status_code == 200:
+            try:
+                res = response.json()
+            except ValueError:
+                print( "Response is not a valid JSON" )
+                return
+
+        else:
+            print( "Request failed with status code:" , response.status_code )
+            return
+        # }}}
+        print( res[ 'result' ] )
+        return
+    # }}}
+    # 指定したタグを削除
+    # {{{
+    def TagDelete( self , tag_id ):
+        PAYLOAD = copy.deepcopy( self.PAYLOAD )
+        # 適当に空白を除去する必要がある。
+        PAYLOAD[ 'method' ]  = "archiveTagDelete"
+        PAYLOAD[ 'params' ]  = {
+            "ID"        : tag_id , 
         }
         headers = {
             "Content-Type": "application/json"
