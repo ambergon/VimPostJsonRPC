@@ -620,7 +620,7 @@ class PostJsonRPC:
             return
         # }}}
 
-        print( "Response:" , res)
+        # print( "Response:" , res)
         self.Buffer( Name="Tags" , Style='sp ' )
         del vim.current.buffer[:]
         for record in res[ 'result' ]:
@@ -630,6 +630,7 @@ class PostJsonRPC:
         return 
     # }}}
     # タグに対して親要素を指定する。
+    # {{{
     def TagParent( self , parent_id ):
         lines = vim.current.line.split( "|" )
         id = lines[0].replace( " "  , "" )
@@ -666,7 +667,12 @@ class PostJsonRPC:
             print( "Request failed with status code:" , response.status_code )
             return
         # }}}
+        print( res[ 'result' ] )
         return
+    # }}}
+
+
+
 
 
     # # 記事を送信する。
