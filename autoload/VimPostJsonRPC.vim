@@ -1,3 +1,12 @@
+" 必須の変数類
+"{{{
+if !exists( 'let g:VimPostJsonRPC_ID' )
+    let g:VimPostJsonRPC_ID=""
+endif
+if !exists( 'g:VimPostJsonRPC_PW' )
+    let g:VimPostJsonRPC_PW=""
+endif
+"}}}
 python3 << EOF
 # -*- coding: utf-8 -*-
 import vim
@@ -316,52 +325,6 @@ class PostJsonRPC:
 
 
     # }}}
-    # 無条件ですべての記事を表示
-    # {{{
-    def SearchAll( self ):
-
-        # リクエストを送信
-        if self.ID != "" and self.PW != "" :
-            # print( "ID/PW mode" )
-            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ) )
-        else:
-            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
-
-        # レスポンスの処理
-        res = []
-        # {{{
-        if response.status_code == 200:
-            try:
-                res = response.json()
-            except ValueError:
-                print( "Response is not a valid JSON" )
-                return
-
-        else:
-            print( "Request failed with status code:" , response.status_code )
-            return
-        # }}}
-
-        # print( "Response:" , res)
-        self.Buffer( Name="Results" , Style='abo sp ' )
-        del vim.current.buffer[:]
-        for record in res[ 'result' ]:
-            # id桁を4桁にする。
-            while len( record[ 'id' ] ) < 4:
-                record[ 'id' ] = " " + record[ 'id' ]
-            text = str( record[ 'id' ] ) + " | " + record[ 'time' ] + " | "
-            count = 0
-            # print( record[ 'text' ] )
-            for line in record[ 'text' ].splitlines():
-                if count == 0 :
-                    vim.current.buffer.append( text + line )
-                    count = 1
-                else :
-                    vim.current.buffer.append( line )
-        del vim.current.buffer[0]
-
-
-    # }}}
     # 指定したIDの記事を表示する。
     # {{{
     def Open( self , id ):
@@ -626,61 +589,86 @@ class PostJsonRPC:
 
         # }}}
 
-    # # コマンドラインから記事を検索する。
-    # # {{{
-    # def SearchTags( self , args ):
-    #     if len( args ) == 0 :
-    #         return
+    # タグ一覧を表示する。
+    # {{{
+    def Tags( self ):
+        PAYLOAD = copy.deepcopy( self.PAYLOAD )
+        PAYLOAD[ 'method' ]  = "archiveTags"
+        PAYLOAD[ 'params' ] = {}
+        headers = {
+            "Content-Type": "application/json"
+        }
+        # リクエストを送信
+        if self.ID != "" and self.PW != "" :
+            # print( "ID/PW mode" )
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ) )
+        else:
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
 
-    #     tags_array = args.split( "," )
+        # レスポンスの処理
+        res = []
+        # {{{
+        if response.status_code == 200:
+            try:
+                res = response.json()
+            except ValueError:
+                print( "Response is not a valid JSON" )
+                return
 
-    #     PAYLOAD = copy.deepcopy( self.PAYLOAD )
-    #     PAYLOAD[ 'method' ]  = "archiveSearchTag"
-    #     PAYLOAD[ 'params' ] = {
-    #         "TAGS" : tags_array
-    #     }
-    #     headers = {
-    #         "Content-Type": "application/json"
-    #     }
-    #     # リクエストを送信
-    #     if self.ID != "" and self.PW != "" :
-    #         # print( "ID/PW mode" )
-    #         response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ) )
-    #     else:
-    #         response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
+        else:
+            print( "Request failed with status code:" , response.status_code )
+            return
+        # }}}
 
-    #     # レスポンスの処理
-    #     res = []
-    #     # {{{
-    #     if response.status_code == 200:
-    #         try:
-    #             res = response.json()
-    #             # print( "Response:" , res)
-    #         except ValueError:
-    #             print( "Response is not a valid JSON" )
-    #             return
+        print( "Response:" , res)
+        self.Buffer( Name="Tags" , Style='sp ' )
+        del vim.current.buffer[:]
+        for record in res[ 'result' ]:
+        #     vim.current.buffer.append( record[ 'id' ] + " | " + record[ 'indent' ] + record[ 'name' ] )
+            vim.current.buffer.append( record[ 'id' ] + " | " + record[ 'tree_view' ] )
+        del vim.current.buffer[0]
+        return 
+    # }}}
+    # タグに対して親要素を指定する。
+    def TagParent( self , parent_id ):
+        lines = vim.current.line.split( "|" )
+        id = lines[0].replace( " "  , "" )
 
-    #     else:
-    #         print( "Request failed with status code:" , response.status_code )
-    #         return
-    #     # }}}
+        # 数値のみ受け付ける。
+        PAYLOAD = copy.deepcopy( self.PAYLOAD )
+        # 適当に空白を除去する必要がある。
+        PAYLOAD[ 'method' ]  = "archiveTagParent"
+        PAYLOAD[ 'params' ]  = {
+            "ID"        : id , 
+            "PARENT_ID" : parent_id, 
+        }
+        headers = {
+            "Content-Type": "application/json"
+        }
+        # リクエストを送信
+        # {{{
+        if self.ID != "" and self.PW != "" :
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ) )
+        else:
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
+        # }}}
+        # レスポンスの処理
+        res = []
+        # {{{
+        if response.status_code == 200:
+            try:
+                res = response.json()
+            except ValueError:
+                print( "Response is not a valid JSON" )
+                return
 
-    #     # print( "Response:" , res)
-    #     vim.command(':e '   + self.PluginName + "Results" )
-    #     vim.command('setl buftype=nowrite' )
-    #     vim.command('setl encoding=utf-8')
-    #     vim.command('setl filetype=markdown' )
-    #     vim.command('setl bufhidden=delete' )
-    #     vim.command('map <silent><buffer><enter>   :py3 VimPostJsonRPCInst.GetArchive()<cr>' )
-    #     del vim.current.buffer[:]
-    #     for record in res[ 'result' ]:
-    #         vim.current.buffer.append( "[" + record[ 'time' ] + "]" + str( record[ 'id' ] )  + ":" + record[ 'title' ] )
-    #     del vim.current.buffer[0]
+        else:
+            print( "Request failed with status code:" , response.status_code )
+            return
+        # }}}
+        return
 
 
-
-
-    # # }}}
     # # 記事を送信する。
     # # {{{
     # def ThreadPush( self , headers , PAYLOAD ):
