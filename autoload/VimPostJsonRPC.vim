@@ -320,7 +320,8 @@ class PostJsonRPC:
                     vim.current.buffer.append( text + line )
                     count = 1
                 else :
-                    vim.current.buffer.append( line )
+                    # インデントを合わせるためだが変更が必要かもしれない。
+                    vim.current.buffer.append( "                    " + line )
         del vim.current.buffer[0]
 
 
