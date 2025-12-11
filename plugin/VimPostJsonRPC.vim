@@ -35,6 +35,16 @@ augroup VimPostJsonRPC
     autocmd BufEnter VimPostJsonRPC://Template command! -buffer -nargs=0 ArchiveTags        call VimPostJsonRPC#pycmd('Tags()')
     autocmd BufEnter VimPostJsonRPC://Tags     command! -buffer -nargs=1 ArchiveTagParent   call VimPostJsonRPC#pycmd('TagParent(<args>)')
     autocmd BufEnter VimPostJsonRPC://Tags     command! -buffer -nargs=1 ArchiveTagDelete   call VimPostJsonRPC#pycmd('TagDelete(<args>)')
+    " 検索結果のハイライト
+    " 赤:重要な事件
+    autocmd BufEnter VimPostJsonRPC://Results syntax match archiveRed /^[0-9\ \-\|]*!.*$/
+    autocmd BufEnter VimPostJsonRPC://Results highlight archiveRed ctermfg=Red guifg=Red
+    " 黄:未来の予定
+    autocmd BufEnter VimPostJsonRPC://Results syntax match archiveYel /^[0-9\ \-\|]*?.*$/
+    autocmd BufEnter VimPostJsonRPC://Results highlight archiveYel ctermfg=yellow guifg=yellow
+    " 緑:?
+    autocmd BufEnter VimPostJsonRPC://Results syntax match archiveGre /^[0-9\ \-\|]*#.*$/
+    autocmd BufEnter VimPostJsonRPC://Results highlight archiveGre ctermfg=green guifg=green
 augroup END
 
 

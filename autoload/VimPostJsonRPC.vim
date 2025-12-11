@@ -324,7 +324,6 @@ class PostJsonRPC:
                     vim.current.buffer.append( "                    " + line )
         del vim.current.buffer[0]
 
-
     # }}}
     # 指定したIDの記事を表示する。
     # {{{
