@@ -304,7 +304,6 @@ class PostJsonRPC:
         # }}}
 
         # print( "Response:" , res)
-
         self.Buffer( Name="Results" , Style='abo sp ' )
         # vim.command('map <silent><buffer><enter>   :py3 VimPostJsonRPCInst.GetArchive()<cr>' )
         del vim.current.buffer[:]
