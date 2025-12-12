@@ -623,7 +623,10 @@ class PostJsonRPC:
         self.Buffer( Name="Tags" , Style='sp ' )
         del vim.current.buffer[:]
         for record in res[ 'result' ]:
-        #     vim.current.buffer.append( record[ 'id' ] + " | " + record[ 'indent' ] + record[ 'name' ] )
+            # id桁を4桁にする。
+            while len( record[ 'id' ] ) < 4:
+                record[ 'id' ] = " " + record[ 'id' ]
+            # vim.current.buffer.append( record[ 'id' ] + " | " + record[ 'indent' ] + record[ 'name' ] )
             vim.current.buffer.append( record[ 'id' ] + " | " + record[ 'tree_view' ] )
         del vim.current.buffer[0]
         return 
