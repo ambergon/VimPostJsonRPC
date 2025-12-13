@@ -33,7 +33,7 @@ augroup VimPostJsonRPC
     autocmd BufEnter VimPostJsonRPC://Check    command! -buffer -nargs=1 ArchiveUrlRemove   call VimPostJsonRPC#pycmd('UrlRemove(<args>)')
     autocmd BufEnter VimPostJsonRPC://Template command! -buffer -nargs=0 ArchiveTags        call VimPostJsonRPC#pycmd('Tags()')
 
-    autocmd BufEnter VimPostJsonRPC://Template command! -buffer -nargs=0 Tags               call VimPostJsonRPC#pycmd('Tags()')
+    autocmd BufEnter VimPostJsonRPC://Tags     command! -buffer -nargs=0 Tags               call VimPostJsonRPC#pycmd('Tags()')
     autocmd BufEnter VimPostJsonRPC://Tags     command! -buffer -nargs=1 TagParent          call VimPostJsonRPC#pycmd('TagParent(<args>)')
     autocmd BufEnter VimPostJsonRPC://Tags     command! -buffer -nargs=1 TagDelete          call VimPostJsonRPC#pycmd('TagDelete(<args>)')
 
