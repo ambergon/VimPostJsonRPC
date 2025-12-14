@@ -311,16 +311,25 @@ class PostJsonRPC:
             # id桁を4桁にする。
             while len( record[ 'id' ] ) < 4:
                 record[ 'id' ] = " " + record[ 'id' ]
-            text = str( record[ 'id' ] ) + " | " + record[ 'time' ] + " | "
             count = 0
             # print( record[ 'text' ] )
             for line in record[ 'text' ].splitlines():
                 if count == 0 :
+                    text = str( record[ 'id' ] ) + " | " + record[ 'time' ] + " |"
+                    if line.startswith( "!" ):
+                        line = "!|" + record[ 'tags' ] + " " + line[len( "!" ):]
+                    elif line.startswith( "?" ):
+                        line = "?|" + record[ 'tags' ] + " " + line[len( "?" ):]
+                    elif line.startswith( "#" ):
+                        line = "#|" + record[ 'tags' ] + " " + line[len( "#" ):]
+                    else :
+                        line = " |" + record[ 'tags' ] + " " + line
+
                     vim.current.buffer.append( text + line )
                     count = 1
                 else :
                     # インデントを合わせるためだが変更が必要かもしれない。
-                    vim.current.buffer.append( "                    " + line )
+                    vim.current.buffer.append( "                     " + line )
         del vim.current.buffer[0]
 
     # }}}
