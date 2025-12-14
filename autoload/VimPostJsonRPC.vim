@@ -339,6 +339,11 @@ class PostJsonRPC:
         cline = vim.current.line
         cline = vim.current.line.replace( " " , "" )
         id = cline.split( "|" )[0]
+        try:
+            float( id )
+        except (ValueError, TypeError):
+            print( "not id" )
+            return
 
         PAYLOAD = copy.deepcopy( self.PAYLOAD )
         # 適当に空白を除去する必要がある。
