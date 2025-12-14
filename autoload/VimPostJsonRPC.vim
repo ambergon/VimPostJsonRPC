@@ -305,7 +305,7 @@ class PostJsonRPC:
 
         # print( "Response:" , res)
         self.Buffer( Name="Results" , Style='abo sp ' )
-        # vim.command('map <silent><buffer><enter>   :py3 VimPostJsonRPCInst.GetArchive()<cr>' )
+        vim.command('map <silent><buffer><enter>  :py3 VimPostJsonRPCInst.Open()<cr>' )
         del vim.current.buffer[:]
         for record in res[ 'result' ]:
             # id桁を4桁にする。
@@ -335,7 +335,11 @@ class PostJsonRPC:
     # }}}
     # 指定したIDの記事を表示する。
     # {{{
-    def Open( self , id ):
+    def Open( self ):
+        cline = vim.current.line
+        cline = vim.current.line.replace( " " , "" )
+        id = cline.split( "|" )[0]
+
         PAYLOAD = copy.deepcopy( self.PAYLOAD )
         # 適当に空白を除去する必要がある。
         PAYLOAD[ 'method' ]  = "archiveOpen"
