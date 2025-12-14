@@ -23,6 +23,10 @@ endif
 command! -nargs=0 Archive               call VimPostJsonRPC#pycmd('Template()')
 augroup VimPostJsonRPC
     autocmd!
+
+    " :w を ArchiveAdd に変更
+    autocmd BufEnter VimPostJsonRPC://Template cabbrev w W
+    autocmd BufLeave VimPostJsonRPC://Template cunabbrev w
     autocmd BufEnter VimPostJsonRPC://Template command! -buffer -nargs=0 W                  call VimPostJsonRPC#pycmd('Add()')
     " autocmd BufEnter VimPostJsonRPC://Template command! -buffer -nargs=0 ArchiveAdd         call VimPostJsonRPC#pycmd('Add()')
     autocmd BufEnter VimPostJsonRPC://Template command! -buffer -nargs=0 ArchiveSearch      call VimPostJsonRPC#pycmd('Search()')
