@@ -309,21 +309,25 @@ class PostJsonRPC:
         del vim.current.buffer[:]
         for record in res[ 'result' ]:
             # id桁を4桁にする。
-            while len( record[ 'id' ] ) < 4:
-                record[ 'id' ] = " " + record[ 'id' ]
+            while len( str( record[ 'id' ] ) ) < 4:
+                record[ 'id' ] = " " + str( record[ 'id' ] )
+            # tag_nameがなければ
+            if 'tag_name' not in record:
+                record[ 'tag_name' ] = ""
+
             count = 0
             # print( record[ 'text' ] )
             for line in record[ 'text' ].splitlines():
                 if count == 0 :
                     text = str( record[ 'id' ] ) + " | " + record[ 'time' ] + " |"
                     if line.startswith( "!" ):
-                        line = "!|" + record[ 'tags' ] + " " + line[len( "!" ):]
+                        line = "!|" + record[ 'tag_name' ] + " " + line[len( "!" ):]
                     elif line.startswith( "?" ):
-                        line = "?|" + record[ 'tags' ] + " " + line[len( "?" ):]
+                        line = "?|" + record[ 'tag_name' ] + " " + line[len( "?" ):]
                     elif line.startswith( "#" ):
-                        line = "#|" + record[ 'tags' ] + " " + line[len( "#" ):]
+                        line = "#|" + record[ 'tag_name' ] + " " + line[len( "#" ):]
                     else :
-                        line = " |" + record[ 'tags' ] + " " + line
+                        line = " |" + record[ 'tag_name' ] + " " + line
 
                     vim.current.buffer.append( text + line )
                     count = 1
