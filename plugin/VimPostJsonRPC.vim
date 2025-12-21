@@ -46,7 +46,7 @@ augroup VimPostJsonRPC
     "" 検索結果のハイライト
     " 赤:重要な事件
     " 黄:未来の予定
-    " 緑:?
+    " 緑:行動しないといけない。購入など かかわる必要のあるもの。
     autocmd BufEnter VimPostJsonRPC://Results highlight archiveRed ctermfg=Red    guifg=Red
     autocmd BufEnter VimPostJsonRPC://Results highlight archiveYel ctermfg=yellow guifg=yellow
     autocmd BufEnter VimPostJsonRPC://Results highlight archiveGre ctermfg=green  guifg=green
