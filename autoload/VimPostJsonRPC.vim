@@ -308,12 +308,18 @@ class PostJsonRPC:
         vim.command('map <silent><buffer><enter>  :py3 VimPostJsonRPCInst.Open()<cr>' )
         del vim.current.buffer[:]
         for record in res[ 'result' ]:
+            prefix = ""
             # id桁を4桁にする。
             while len( str( record[ 'id' ] ) ) < 4:
                 record[ 'id' ] = " " + str( record[ 'id' ] )
-            # tag_nameがなければ
-            if 'tag_name' not in record:
-                record[ 'tag_name' ] = ""
+            # # tag_nameがなければ
+            # if 'tag_name' not in record:
+            if 'tag_name' in record:
+                prefix = record[ 'tag_name' ] 
+            else :
+                # person があれば
+                if 'person_name' in record:
+                    prefix = record[ 'person_name' ]
 
             count = 0
             # print( record[ 'text' ] )
@@ -321,13 +327,13 @@ class PostJsonRPC:
                 if count == 0 :
                     text = str( record[ 'id' ] ) + " | " + record[ 'time' ] + " |"
                     if line.startswith( "!" ):
-                        line = "!|" + record[ 'tag_name' ] + " " + line[len( "!" ):]
+                        line = "!|" + prefix + " " + line[len( "!" ):]
                     elif line.startswith( "?" ):
-                        line = "?|" + record[ 'tag_name' ] + " " + line[len( "?" ):]
+                        line = "?|" + prefix + " " + line[len( "?" ):]
                     elif line.startswith( "#" ):
-                        line = "#|" + record[ 'tag_name' ] + " " + line[len( "#" ):]
+                        line = "#|" + prefix + " " + line[len( "#" ):]
                     else :
-                        line = " |" + record[ 'tag_name' ] + " " + line
+                        line = " |" + prefix + " " + line
 
                     vim.current.buffer.append( text + line )
                     count = 1
