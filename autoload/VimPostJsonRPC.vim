@@ -1,6 +1,6 @@
 " 必須の変数類
 "{{{
-if !exists( 'let g:VimPostJsonRPC_ID' )
+if !exists( 'g:VimPostJsonRPC_ID' )
     let g:VimPostJsonRPC_ID=""
 endif
 if !exists( 'g:VimPostJsonRPC_PW' )
