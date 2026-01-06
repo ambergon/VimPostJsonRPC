@@ -39,8 +39,9 @@ augroup VimPostJsonRPC
     autocmd BufEnter VimPostJsonRPC://Template command! -buffer -nargs=0 ArchiveTags        call VimPostJsonRPC#pycmd('Tags()')
 
     autocmd BufEnter VimPostJsonRPC://Tags     command! -buffer -nargs=0 Tags               call VimPostJsonRPC#pycmd('Tags()')
-    autocmd BufEnter VimPostJsonRPC://Tags     command! -buffer -nargs=1 TagParent          call VimPostJsonRPC#pycmd('TagParent(<args>)')
-    autocmd BufEnter VimPostJsonRPC://Tags     command! -buffer -nargs=1 TagDelete          call VimPostJsonRPC#pycmd('TagDelete(<args>)')
+    autocmd BufEnter VimPostJsonRPC://Tags     command! -buffer -nargs=1 Parent             call VimPostJsonRPC#pycmd('TagParent(<args>)')
+    autocmd BufEnter VimPostJsonRPC://Tags     command! -buffer -nargs=1 Delete             call VimPostJsonRPC#pycmd('TagDelete(<args>)')
+    autocmd BufEnter VimPostJsonRPC://Tags     command! -buffer -nargs=1 Rename             call VimPostJsonRPC#pycmd('TagRename(<f-args>)')
 
     "" 初回ハイライトが機能しない問題がある。
     "" 検索結果のハイライト

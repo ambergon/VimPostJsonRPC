@@ -736,6 +736,47 @@ class PostJsonRPC:
         print( res[ 'result' ] )
         return
     # }}}
+    # タグ名の変更
+    # {{{
+    def TagRename( self , new_name ):
+        lines = vim.current.line.split( "|" )
+        id = lines[0].replace( " "  , "" )
+
+        # 数値のみ受け付ける。
+        PAYLOAD = copy.deepcopy( self.PAYLOAD )
+        # 適当に空白を除去する必要がある。
+        PAYLOAD[ 'method' ]  = "archiveTagRename"
+        PAYLOAD[ 'params' ]  = {
+            "ID"    : id , 
+            "NAME"  : new_name , 
+        }
+        headers = {
+            "Content-Type": "application/json"
+        }
+        # リクエストを送信
+        # {{{
+        if self.ID != "" and self.PW != "" :
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) , auth=( self.ID , self.PW ) )
+        else:
+            response = requests.post( self.URL , headers=headers , data=json.dumps( PAYLOAD ) )
+        # }}}
+        # レスポンスの処理
+        res = []
+        # {{{
+        if response.status_code == 200:
+            try:
+                res = response.json()
+            except ValueError:
+                print( "Response is not a valid JSON" )
+                return
+
+        else:
+            print( "Request failed with status code:" , response.status_code )
+            return
+        # }}}
+        print( res[ 'result' ] )
+        return
+    # }}}
 
 
 
